@@ -229,6 +229,7 @@ function vtext(x,t,cx,y0,len,align){x.save();x.translate(cx,y0);x.rotate(Math.PI
 function drawSpine(x,b,w,h,k){
   const c=colorOf(b),bible=b.author==='The Bible',ac=b.accent||null,hv=hash(b.id+'v');
   const v0=bible?0:hv%5,v=w<26*k&&(v0===1||v0===3)?0:v0,F=bible?FONTS[3]:v===4?{f:'"Playfair Display"',w:700,up:0}:FONTS[hash(b.id+'f')%FONTS.length];
+  if(b.cover&&!drawSpine.plain){const e=coverImg(b.cover);if(e.ok){try{drawCoverSpine(x,b,w,h,k,e.im,F);return}catch{}}}
   const band=ac||rgba(textOn(c),.35);let tc=bible&&ac?ac:textOn(c);
   x.fillStyle=c;x.fillRect(0,0,w,h);
   let top=18*k,bot=h-18*k,auPos='end',emblem=false,ital=v===4,ttc=tc;
@@ -268,6 +269,22 @@ function woodGrain(){if(woodGrain.c)return woodGrain.c;const W=600,H=40,c=docume
   return woodGrain.c=c}
 function wallNoise(){const c=document.createElement('canvas');c.width=c.height=140;const x=c.getContext('2d'),im=x.createImageData(140,140);for(let i=0;i<im.data.length;i+=4){const v=Math.random()*255;im.data[i]=im.data[i+1]=im.data[i+2]=v;im.data[i+3]=8}x.putImageData(im,0,0);return c}
 function applyTextures(){const r=document.documentElement.style;try{r.setProperty('--noise',`url(${wallNoise().toDataURL()})`);r.setProperty('--grain',`url(${woodGrain().toDataURL()})`)}catch{}}
+const COV=new Map();
+function coverImg(id){let e=COV.get(id);if(!e){const im=new Image();im.crossOrigin='anonymous';e={im,ok:false,done:false};
+  e.p=new Promise(r=>{im.onload=()=>{e.ok=im.naturalWidth>20&&im.naturalHeight>20;e.done=true;r()};im.onerror=()=>{e.done=true;r()}});
+  e.p.then(()=>{clearTimeout(coverImg.t);coverImg.t=setTimeout(()=>dispatchEvent(new Event('covers')),80)});
+  im.src='https://covers.openlibrary.org/b/id/'+id+'-L.jpg?default=false';COV.set(id,e)}return e}
+function drawCoverSpine(x,b,w,h,k,img,F){
+  const iw=img.naturalWidth,ih=img.naturalHeight;let sx,sy,sw,sh;
+  if(w/h>iw/ih){sw=iw;sh=iw*h/w;sx=0;sy=(ih-sh)/2}else{sh=ih;sw=ih*w/h;sy=0;sx=(iw-sw)/2}
+  x.drawImage(img,sx,sy,sw,sh,0,0,w,h);
+  const c=colorOf(b),title=F.up?(b.title||'Untitled').toUpperCase():(b.title||'Untitled');
+  const t=fit(x,title,F,false,Math.max(7*k,Math.min(14*k,(w-10*k)*.62)),7*k,h*.72-16*k);
+  const lw=Math.min(w-6*k,t.s*1.5+8*k),ll=t.tw+18*k,lx=(w-lw)/2,ly=(h-ll)/2;
+  x.save();x.shadowColor='rgba(0,0,0,.25)';x.shadowBlur=3*k;x.fillStyle=rgba(c,.9);x.beginPath();x.roundRect?x.roundRect(lx,ly,lw,ll,2*k):x.rect(lx,ly,lw,ll);x.fill();x.restore();
+  x.fillStyle=textOn(c);vtext(x,t.t,w/2,ly+9*k,t.tw,'start');
+  finish(x,w,h,k);
+}
 function finish(x,w,h,k){
   x.globalAlpha=1;x.fillStyle=x.createPattern(noise(),'repeat');x.fillRect(0,0,w,h);
   const g=x.createLinearGradient(0,0,w,0);g.addColorStop(0,'rgba(0,0,0,.40)');g.addColorStop(.1,'rgba(255,255,255,.08)');g.addColorStop(.28,'rgba(255,255,255,.17)');g.addColorStop(.5,'rgba(255,255,255,0)');g.addColorStop(.86,'rgba(0,0,0,.14)');g.addColorStop(1,'rgba(0,0,0,.45)');
@@ -505,8 +522,10 @@ function drawChips(){
 let prepTok=0;
 async function prepare(){
   const tok=++prepTok;$('wpSave').disabled=true;wpBlob=null;
+  await Promise.race([Promise.all(books.filter(b=>b.cover).map(b=>coverImg(b.cover).p)),new Promise(r=>setTimeout(r,8000))]);
+  if(tok!==prepTok)return;
   const [W,H]=size(),cv=document.createElement('canvas');paint(cv,W,H,$('wpLabel').checked);
-  const blob=await new Promise(r=>cv.toBlob(r,'image/png'));
+  let blob;try{blob=await new Promise(r=>cv.toBlob(r,'image/png'))}catch{drawSpine.plain=true;paint(cv,W,H,$('wpLabel').checked);drawSpine.plain=false;blob=await new Promise(r=>cv.toBlob(r,'image/png'))}
   if(tok!==prepTok)return;
   if(!blob){toast('Couldn’t draw the wallpaper — try a smaller size');return}
   if(wpURL)URL.revokeObjectURL(wpURL);wpBlob=blob;wpURL=URL.createObjectURL(blob);wpName=`${fileBase()} wallpaper ${W}x${H}.png`;
@@ -541,6 +560,7 @@ function standaloneMain(){
     $('view').showModal();
   }
   function render(){const sh=$('shelf');sh.replaceChildren();rowsEl(B,sh,show)}
+  addEventListener('covers',render);
   applyTextures();
   $('vClose').onclick=()=>$('view').close();
   let t;addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(render,80)});render();
@@ -561,7 +581,7 @@ function buildPage(){
     '<div class="foot"><button class="btn pri" type="button" id="vClose">Done</button></div></div></dialog>',
     '<'+S+'>{const B='+data+';const PAL='+JSON.stringify(PAL)+';',
     'const hash='+hash+';const colorOf='+colorOf+';const lum='+lum+';const textOn='+textOn+';const rgba='+rgba+';const dims='+dims+';const FONTS='+JSON.stringify(FONTS)+';const FONT_LOADS='+JSON.stringify(FONT_LOADS)+';',
-    [noise,wallNoise,woodGrain,applyTextures,fit,vtext,drawSpine,finish,spineEl,chunk,rowsEl].map(f=>f.toString()).join('\n')+'('+standaloneMain+')()}</'+S+'>',
+    'const COV=new Map();'+[noise,wallNoise,woodGrain,applyTextures,coverImg,drawCoverSpine,fit,vtext,drawSpine,finish,spineEl,chunk,rowsEl].map(f=>f.toString()).join('\n')+'('+standaloneMain+')()}</'+S+'>',
     '</body></html>'].join('\n');
 }
 $('pgBtn').onclick=()=>{$('more').close();download(buildPage(),`${fileBase()}.html`,'text/html');toast('Saved — send the file to anyone')};
@@ -574,6 +594,7 @@ $('rsFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const 
   books=j.books.filter(b=>b&&typeof b.title==='string').map(b=>({id:String(b.id||Math.random().toString(36).slice(2)).slice(0,40),title:b.title.slice(0,120),author:String(b.author||'').slice(0,80),finished:/^\d{4}-\d{2}$/.test(b.finished)?b.finished:'',rating:Math.max(0,Math.min(5,b.rating|0)),color:hexOk(b.color),accent:hexOk(b.accent),cover:Number.isInteger(b.cover)?b.cover:null,pages:Number.isInteger(b.pages)&&b.pages>0&&b.pages<=5000?b.pages:null,note:String(b.note||'').slice(0,400),addedAt:+b.addedAt||0}));
   if(typeof j.name==='string'&&j.name.trim())shelfName=j.name.trim().slice(0,60);toast(`Restored ${books.length} books`);after()}catch{toast('That file isn’t a bookshelf backup')}e.target.value=''};
 
+addEventListener('covers',()=>{render();if($('edit').open)drawPick()});
 applyTextures();
 new ResizeObserver(()=>{clearTimeout(render.t);render.t=setTimeout(render,80)}).observe($('shelf'));
 try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j){books=Array.isArray(j.books)?j.books:[];if(j.name)shelfName=j.name;if(j.bg&&BGS[j.bg])wpBg=j.bg}}catch{}
