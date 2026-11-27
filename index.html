@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bookshelf Wallpaper Maker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Barlow+Condensed:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: warm, personal, a little proud — a reading wall you show friends.
+   IDEA: a real walnut bookshelf mounted on a painted wall; each book read is a spine.
+   PICTURE: the shelf itself, rows of spines on planks with bookends, filling the first screen.
+   COLOUR and TYPE: deep slate-teal wall (pale sage by day), walnut planks, many-coloured spines, coral accent; Young Serif title, Barlow Condensed spines, Inter UI.
+   LAYOUT: modest title row with count and actions, then the shelf full width; add/edit in a dialog. */
+:root{color-scheme:light dark;
+--wall:light-dark(#cfdad6,#203236);--wall2:light-dark(#bfcdc8,#18272a);
+--ink:light-dark(#1d2a2c,#eef2ee);--soft:light-dark(#4b5d5f,#a9bab6);
+--wood:#7b4b2a;--wood2:#5a331b;--woodlite:#a26a40;
+--panel:light-dark(#ffffff,#16201f);--line:light-dark(#d6dfdc,#2f4245);
+--accent:light-dark(#c4472f,#ff8a6b)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:radial-gradient(120% 80% at 50% 0%,var(--wall),var(--wall2));color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;overflow-x:clip;min-height:100vh}
+.band{padding:clamp(20px,3.5vw,48px) max(4vw,16px);max-width:1240px;margin:0 auto}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 20px;justify-content:space-between}
+h1{font:400 clamp(32px,5vw,48px)/1.05 "Young Serif",Georgia,serif;margin:0;text-wrap:balance}
+h1 button{all:unset;cursor:pointer}h1 button:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+.sub{color:var(--soft);margin:6px 0 0}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
+.btn{font:600 15px Inter,sans-serif;min-height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.spine:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:18px;color:var(--soft);font-size:14px}
+select,input,textarea{font:16px Inter,sans-serif;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:10px;min-height:44px;padding:8px 12px;width:100%}
+.tools select{width:auto}
+#shelf{margin-top:22px;padding:18px 14px 6px;background:linear-gradient(var(--wood2),var(--wood2)) left/14px 100% no-repeat,linear-gradient(var(--wood2),var(--wood2)) right/14px 100% no-repeat,rgba(0,0,0,.14);border-radius:6px;box-shadow:inset 0 10px 30px rgba(0,0,0,.25)}
+.row{position:relative;display:flex;align-items:flex-end;gap:3px;height:214px;padding:0 18px;margin-bottom:22px}
+.row::after{content:"";position:absolute;left:-14px;right:-14px;bottom:-16px;height:16px;background:linear-gradient(var(--woodlite),var(--wood) 35%,var(--wood2));border-radius:2px;box-shadow:0 8px 14px rgba(0,0,0,.3)}
+.spine{position:relative;flex:none;border:0;padding:10px 0;cursor:pointer;border-radius:3px 3px 1px 1px;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;font:600 15px/1 "Barlow Condensed",sans-serif;letter-spacing:.02em;overflow:hidden;box-shadow:inset 3px 0 0 rgba(255,255,255,.18),inset -4px 0 0 rgba(0,0,0,.18),2px 0 3px rgba(0,0,0,.25);transition:transform .2s}
+.spine::before,.spine::after{content:"";position:absolute;left:0;right:0;height:3px;background:currentColor;opacity:.35}
+.spine::before{top:14px}.spine::after{bottom:14px}
+.spine:hover{transform:translateY(-8px)}
+.spine span{max-height:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.spine small{font-weight:500;font-size:12px;opacity:.8;margin-top:8px}
+.end{flex:none;width:22px;height:120px;border-radius:4px 4px 0 0;background:linear-gradient(90deg,#3a3f44,#6b737a 45%,#2b2f33)}
+.lean{transform-origin:bottom left;transform:rotate(9deg);margin-left:10px}.lean:hover{transform:rotate(9deg) translateY(-6px)}
+.empty{height:214px;display:grid;place-items:center;color:#f1e6d8;text-align:center;font-size:15px;padding:0 20px}
+.note{font-size:13px;color:var(--soft);margin-top:14px}
+dialog{border:0;border-radius:16px;padding:0;width:min(460px,94vw);background:var(--panel);color:var(--ink);box-shadow:0 30px 80px rgba(0,0,0,.45)}
+dialog::backdrop{background:rgba(10,20,20,.55)}
+form,.det{padding:22px;display:grid;gap:12px}
+dialog h2{font:400 26px/1.1 "Young Serif",serif;margin:0}
+label{font-size:14px;font-weight:500;display:grid;gap:4px}
+.sw{display:flex;flex-wrap:wrap;gap:6px}
+.sw button{width:34px;height:34px;border-radius:50%;border:2px solid transparent;cursor:pointer}
+.sw button[aria-pressed=true]{border-color:var(--ink);box-shadow:0 0 0 2px var(--panel) inset}
+.stars{display:flex;gap:2px}.stars button{all:unset;cursor:pointer;font-size:26px;width:36px;height:40px;text-align:center;color:var(--line)}.stars button.on{color:#e9a93b}
+.stars button:focus-visible{outline:2px solid var(--accent)}
+.foot{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;margin-top:4px}
+.foot .del{margin-right:auto;color:var(--accent)}
+.meta{color:var(--soft);margin:0}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.on{opacity:1}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+@media(max-width:600px){.row{height:184px;padding:0 8px}.spine{font-size:13px}.grid2{grid-template-columns:minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){.spine{transition:none}}
+</style>
+</head>
+<body>
+<main class="band">
+  <header>
+    <div>
+      <h1><button id="name" type="button" aria-label="Shelf name">My Bookshelf</button></h1>
+      <p class="sub" id="count">Loading the shelf…</p>
+    </div>
+    <div class="acts">
+      <button class="btn" id="addBtn" type="button">Add a book</button>
+      <button class="btn pri" id="wpBtn" type="button" hidden>Make wallpaper</button>
+    </div>
+  </header>
+  <div class="tools">
+    <label style="display:flex;gap:8px;align-items:center;font-weight:400">Arrange by
+      <select id="sort"><option value="added">Order read</option><option value="colour">Colour (rainbow)</option><option value="author">Author</option><option value="title">Title</option><option value="rating">Rating</option></select>
+    </label>
+  </div>
+  <section id="shelf" aria-label="Bookshelf"></section>
+  <p class="note" id="note"></p>
+  <div class="tools" style="margin-top:6px">
+    <span>Your books are saved in this browser only.</span>
+    <button class="btn" id="bkBtn" type="button">Back up books</button>
+    <button class="btn" id="rsBtn" type="button">Restore backup</button>
+    <button class="btn" id="pgBtn" type="button" hidden>Download shareable page</button>
+    <input type="file" id="rsFile" accept=".json,application/json" hidden>
+  </div>
+</main>
+
+<dialog id="edit"><form id="f">
+  <h2 id="fTitle">Add a book</h2>
+  <label>Title<input id="t" required maxlength="120" autocomplete="off"></label>
+  <label>Author<input id="a" maxlength="80" autocomplete="off"></label>
+  <div class="grid2">
+    <label>Finished<input id="d" type="month"></label>
+    <div><span style="font-size:14px;font-weight:500">Rating</span><div class="stars" id="stars"></div></div>
+  </div>
+  <div><span style="font-size:14px;font-weight:500">Spine colour</span><div class="sw" id="sw"></div></div>
+  <label>Note<textarea id="n" rows="2" maxlength="400"></textarea></label>
+  <div class="foot"><button class="btn del" type="button" id="del" hidden>Remove</button><button class="btn" type="button" id="cancel">Cancel</button><button class="btn pri" type="submit">Save</button></div>
+</form></dialog>
+
+<dialog id="view"><div class="det">
+  <h2 id="vT"></h2><p class="meta" id="vA"></p><p class="meta" id="vM"></p><p id="vN" style="margin:0"></p>
+  <div class="foot"><button class="btn" type="button" id="vEdit" hidden>Edit</button><button class="btn pri" type="button" id="vClose">Close</button></div>
+</div></dialog>
+
+<dialog id="wp"><div class="det">
+  <h2>Download wallpaper</h2>
+  <label>Size<select id="wpSize">
+    <option value="2560x1440">Desktop · 2560 × 1440</option><option value="1920x1080">Desktop · 1920 × 1080</option>
+    <option value="3840x2160">4K · 3840 × 2160</option><option value="1179x2556">Phone · 1179 × 2556</option><option value="2048x2732">Tablet · 2048 × 2732</option>
+  </select></label>
+  <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="wpLabel" checked style="width:20px;min-height:20px"> Show shelf name and count</label>
+  <canvas id="prev" style="width:100%;border-radius:8px;background:#000"></canvas>
+  <div class="foot"><button class="btn" type="button" id="wpClose">Cancel</button><button class="btn pri" type="button" id="wpSave">Save PNG</button></div>
+</div></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+{
+const $=id=>document.getElementById(id);
+const KEY='bookshelf-wallpaper-maker.v1';
+const dl={save:async({filename,data})=>{const blob=data instanceof Blob?data:new Blob([data],{type:/\.html$/.test(filename)?'text/html':'application/json'});const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),5000);return {status:'saved'}}};
+let canStore=true;
+function save(){try{localStorage.setItem(KEY,JSON.stringify({name:shelfName,books}))}catch{canStore=false;$('note').textContent='This browser isn\u2019t saving your books. Use \u201cBack up books\u201d before closing the page.'}}
+function after(){$('wpBtn').hidden=!books.length;$('pgBtn').hidden=!books.length;save();render()}
+const PAL=['#b23a48','#e07a5f','#f2cc8f','#e9c46a','#81b29a','#2a9d8f','#3d5a80','#264653','#5e548e','#9c6644','#d4a373','#efe6d2','#1f1f24','#c9184a'];
+let books=[],shelfName='My Bookshelf',owner=true,db=true,editing=null,pickColor=null,rating=0;
+const hash=s=>{let h=7;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h};
+const colorOf=b=>b.color||PAL[hash(b.id)%PAL.length];
+const lum=hex=>{const n=parseInt(hex.slice(1),16),r=n>>16,g=n>>8&255,b=n&255;return (r*299+g*587+b*114)/1000};
+const textOn=hex=>lum(hex)>150?'#1d1d1f':'#f7f2ea';
+const dims=b=>{const h=hash(b.id+'x');return {w:30+Math.min(26,(b.title||'').length*.7)+h%9,h:.72+(h%28)/100}};
+const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),2600)};
+const hue=hex=>{const n=parseInt(hex.slice(1),16);let r=(n>>16)/255,g=(n>>8&255)/255,b=(n&255)/255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;if(d<.08)return 400+(1-mx)*50;let h=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;return (h*60+360)%360};
+
+function sorted(){
+  const s=$('sort').value,a=[...books];
+  if(s==='colour')a.sort((x,y)=>hue(colorOf(x))-hue(colorOf(y)));
+  else if(s==='author')a.sort((x,y)=>(x.author||'').localeCompare(y.author||''));
+  else if(s==='title')a.sort((x,y)=>(x.title||'').localeCompare(y.title||''));
+  else if(s==='rating')a.sort((x,y)=>(y.rating||0)-(x.rating||0));
+  else a.sort((x,y)=>(x.finished||'9999').localeCompare(y.finished||'9999')||(x.addedAt||0)-(y.addedAt||0));
+  return a;
+}
+function chunk(list,width,scale){
+  const rows=[[]];let used=0;
+  for(const b of list){const w=dims(b).w*scale+3;if(used+w>width-30*scale&&rows.at(-1).length){rows.push([]);used=0}rows.at(-1).push(b);used+=w}
+  return rows;
+}
+function render(){
+  const shelf=$('shelf');shelf.replaceChildren();
+  $('name').textContent=shelfName;document.title=shelfName;
+  $('count').textContent=books.length?`${books.length} book${books.length>1?'s':''} read${owner?' · tap a spine to edit':' · tap a spine for details'}`:(owner?'Your shelf is empty — add the first book you’ve read.':'Nothing on the shelf yet.');
+  if(!books.length){const e=document.createElement('div');e.className='row';const m=document.createElement('div');m.className='empty';m.style.flex='1';m.textContent=owner?'Press “Add a book” to place your first spine here.':'Check back soon.';e.append(m);shelf.append(e);return}
+  const small=innerWidth<600,scale=small?.86:1,rh=small?184:214;
+  const rows=chunk(sorted(),shelf.clientWidth-(small?16:36),scale);
+  rows.forEach((r,ri)=>{
+    const row=document.createElement('div');row.className='row';
+    r.forEach((b,i)=>{
+      const d=dims(b),c=colorOf(b),el=document.createElement('button');
+      el.type='button';el.className='spine';
+      if(ri===rows.length-1&&i===r.length-1&&r.length>2)el.classList.add('lean');
+      el.style.cssText=`width:${Math.round(d.w*scale)}px;height:${Math.round(d.h*(rh-14))}px;background:linear-gradient(90deg,${c},${c} 70%,rgba(0,0,0,.2)),${c};color:${textOn(c)}`;
+      const t=document.createElement('span');t.textContent=b.title||'Untitled';el.append(t);
+      if(b.author&&d.h>.8){const s=document.createElement('small');s.textContent=b.author.split(' ').pop();el.append(s)}
+      el.setAttribute('aria-label',`${b.title||'Untitled'}${b.author?' by '+b.author:''}`);
+      el.onclick=()=>showBook(b);row.append(el);
+    });
+    if(ri===rows.length-1){const e=document.createElement('div');e.className='end';e.style.marginLeft='auto';row.append(e)}
+    shelf.append(row);
+  });
+}
+function showBook(b){
+  $('vT').textContent=b.title||'Untitled';$('vA').textContent=b.author?`by ${b.author}`:'';
+  const when=b.finished?new Date(b.finished+'-01').toLocaleDateString(undefined,{month:'long',year:'numeric'}):'';
+  $('vM').textContent=[when&&`Finished ${when}`,b.rating?'★'.repeat(b.rating)+'☆'.repeat(5-b.rating):''].filter(Boolean).join(' · ');
+  $('vN').textContent=b.note||'';$('vEdit').hidden=!owner;$('vEdit').onclick=()=>{$('view').close();openEdit(b)};
+  $('view').showModal();
+}
+function drawStars(){const s=$('stars');s.replaceChildren();for(let i=1;i<=5;i++){const b=document.createElement('button');b.type='button';b.textContent='★';b.className=i<=rating?'on':'';b.setAttribute('aria-label',`${i} star${i>1?'s':''}`);b.onclick=()=>{rating=rating===i?0:i;drawStars()};s.append(b)}}
+function drawSw(){const s=$('sw');s.replaceChildren();PAL.forEach(c=>{const b=document.createElement('button');b.type='button';b.style.background=c;b.setAttribute('aria-label','Colour '+c);b.setAttribute('aria-pressed',String(pickColor===c));b.onclick=()=>{pickColor=c;drawSw()};s.append(b)})}
+function openEdit(b){
+  editing=b||null;$('fTitle').textContent=b?'Edit book':'Add a book';
+  $('t').value=b?.title||'';$('a').value=b?.author||'';$('d').value=b?.finished||new Date().toISOString().slice(0,7);$('n').value=b?.note||'';
+  rating=b?.rating||0;pickColor=b?.color||PAL[Math.floor(Math.random()*PAL.length)];drawStars();drawSw();
+  $('del').hidden=!b;$('edit').showModal();$('t').focus();
+}
+$('f').addEventListener('submit',async e=>{
+  e.preventDefault();if(!db)return;
+  const body={title:$('t').value.trim(),author:$('a').value.trim(),finished:$('d').value||'',rating,color:pickColor,note:$('n').value.trim(),addedAt:editing?.addedAt||Date.now()};
+  if(!body.title)return;
+  if(editing){Object.assign(books.find(b=>b.id===editing.id)||{},body)}else books.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),...body});
+  $('edit').close();toast(editing?'Saved':'Added to your shelf');after();
+});
+$('del').onclick=()=>{if(!editing)return;books=books.filter(b=>b.id!==editing.id);$('edit').close();toast('Removed');after()};
+$('cancel').onclick=()=>$('edit').close();$('vClose').onclick=()=>$('view').close();
+$('addBtn').onclick=()=>openEdit();$('sort').onchange=render;
+$('name').onclick=()=>{if(!owner||!db)return;const n=$('name');n.contentEditable='true';n.focus();document.getSelection().selectAllChildren(n)};
+$('name').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('name').blur()}});
+$('name').addEventListener('blur',async()=>{const n=$('name');if(n.contentEditable!=='true')return;n.contentEditable='false';const v=n.textContent.trim().slice(0,60)||'My Bookshelf';if(v!==shelfName){shelfName=v;save()}render()});
+
+/* ---- wallpaper ---- */
+function paint(cv,W,H,withLabel){
+  cv.width=W;cv.height=H;const x=cv.getContext('2d');
+  const g=x.createRadialGradient(W/2,0,0,W/2,0,Math.max(W,H));g.addColorStop(0,'#2b4246');g.addColorStop(1,'#141f21');x.fillStyle=g;x.fillRect(0,0,W,H);
+  const list=sorted(),mx=W*.08,top=H*(withLabel?.16:.1),avail=H*(withLabel?.76:.8),innerW=W-mx*2;
+  let k=Math.min(W,H)/420,rows;
+  for(;k>.2;k*=.94){rows=chunk(list,innerW-40*k,k);if(rows.length*(214*k+34*k)<=avail)break}
+  if(rows.length>1){const tw=list.reduce((t,b)=>t+dims(b).w*k+3*k,0)/rows.length;const n=rows.length;rows=Array.from({length:n},()=>[]);let cum=0;
+    for(const b of list){const w=dims(b).w*k+3*k;rows[Math.min(n-1,Math.floor((cum+w/2)/tw))].push(b);cum+=w}rows=rows.filter(r=>r.length)}
+  const rh=214*k,gap=34*k,total=rows.length*(rh+gap),y0=top+(avail-total)/2;
+  rows.forEach((r,ri)=>{
+    const y=y0+ri*(rh+gap),base=y+rh;let rowW=r.reduce((s,b)=>s+dims(b).w*k+3*k,0),cx=mx+20*k+(innerW-40*k-rowW)/2;
+    const pg=x.createLinearGradient(0,base,0,base+16*k);pg.addColorStop(0,'#a26a40');pg.addColorStop(.35,'#7b4b2a');pg.addColorStop(1,'#5a331b');
+    x.fillStyle='rgba(0,0,0,.35)';x.fillRect(mx-6*k,base+16*k,innerW+12*k,10*k);x.fillStyle=pg;x.fillRect(mx-14*k,base,innerW+28*k,16*k);
+    r.forEach(b=>{
+      const d=dims(b),w=d.w*k,h=d.h*(rh-14*k),c=colorOf(b),tc=textOn(c);
+      x.fillStyle='rgba(0,0,0,.25)';x.fillRect(cx+2*k,base-h+2*k,w,h-2*k);
+      x.fillStyle=c;x.fillRect(cx,base-h,w,h);
+      x.fillStyle='rgba(255,255,255,.16)';x.fillRect(cx,base-h,3*k,h);x.fillStyle='rgba(0,0,0,.18)';x.fillRect(cx+w-4*k,base-h,4*k,h);
+      x.globalAlpha=.35;x.fillStyle=tc;x.fillRect(cx,base-h+14*k,w,3*k);x.fillRect(cx,base-17*k,w,3*k);x.globalAlpha=1;
+      x.save();x.translate(cx+w/2,base-h);x.rotate(Math.PI/2);x.fillStyle=tc;x.textBaseline='middle';
+      const room=h-40*k;let au=b.author&&d.h>.8?b.author.split(' ').pop():'',aw=0;
+      if(au){x.font=`500 ${12*k}px "Barlow Condensed",sans-serif`;aw=x.measureText(au).width+14*k}
+      let fs=15,t=b.title||'Untitled';x.font=`600 ${fs*k}px "Barlow Condensed",sans-serif`;
+      if(aw&&x.measureText(t).width>room-aw){au='';aw=0}
+      while(fs>11&&x.measureText(t).width>room){fs-=.5;x.font=`600 ${fs*k}px "Barlow Condensed",sans-serif`}
+      while(t.length>1&&x.measureText(t).width>room-aw)t=t.slice(0,-2).trimEnd()+'…';
+      x.fillText(t,20*k,0);
+      if(au){x.font=`500 ${12*k}px "Barlow Condensed",sans-serif`;x.globalAlpha=.8;x.fillText(au,h-20*k-x.measureText(au).width,0)}
+      x.restore();cx+=w+3*k;
+    });
+  });
+  if(withLabel){x.fillStyle='#eef2ee';x.textAlign='center';x.font=`400 ${Math.min(W,H)*.045}px "Young Serif",serif`;x.fillText(shelfName,W/2,H*.09);
+    x.font=`500 ${Math.min(W,H)*.018}px Inter,sans-serif`;x.fillStyle='#a9bab6';x.fillText(`${books.length} book${books.length===1?'':'s'} read`,W/2,H*.09+Math.min(W,H)*.04)}
+}
+const size=()=>$('wpSize').value.split('x').map(Number);
+const preview=()=>{const [W,H]=size();const s=Math.min(1,900/Math.max(W,H));const cv=$('prev');paint(cv,Math.round(W*s),Math.round(H*s),$('wpLabel').checked);cv.style.maxHeight='46vh';cv.style.objectFit='contain'};
+$('wpBtn').onclick=async()=>{await document.fonts.ready;$('wp').showModal();preview()};
+$('wpSize').onchange=preview;$('wpLabel').onchange=preview;$('wpClose').onclick=()=>$('wp').close();
+$('wpSave').onclick=()=>{
+  if(!dl)return;const [W,H]=size(),cv=document.createElement('canvas');paint(cv,W,H,$('wpLabel').checked);
+  cv.toBlob(async blob=>{try{await dl.save({filename:`${shelfName.replace(/[^\w\- ]+/g,'').trim()||'bookshelf'} ${W}x${H}.png`,data:blob});$('wp').close();toast('Wallpaper saved to your downloads')}catch(e){if(e?.code!=='declined')toast(e?.code==='host_unavailable'?'Open this page in a browser to save':'Couldn’t save the image')}},'image/png');
+};
+
+/* ---- standalone page for friends without Claude ---- */
+function standaloneMain(){
+  const $=id=>document.getElementById(id);
+  function show(b){
+    $('vT').textContent=b.title||'Untitled';$('vA').textContent=b.author?'by '+b.author:'';
+    const when=b.finished?new Date(b.finished+'-01').toLocaleDateString(undefined,{month:'long',year:'numeric'}):'';
+    $('vM').textContent=[when&&'Finished '+when,b.rating?'★'.repeat(b.rating)+'☆'.repeat(5-b.rating):''].filter(Boolean).join(' · ');
+    $('vN').textContent=b.note||'';$('view').showModal();
+  }
+  function render(){
+    const sh=$('shelf');sh.replaceChildren();
+    const small=innerWidth<600,scale=small?.86:1,rh=small?184:214;
+    const rows=chunk(B,sh.clientWidth-(small?16:36),scale);
+    rows.forEach((r,ri)=>{
+      const row=document.createElement('div');row.className='row';
+      r.forEach((b,i)=>{
+        const d=dims(b),c=colorOf(b),el=document.createElement('button');
+        el.type='button';el.className='spine';
+        if(ri===rows.length-1&&i===r.length-1&&r.length>2)el.classList.add('lean');
+        el.style.cssText='width:'+Math.round(d.w*scale)+'px;height:'+Math.round(d.h*(rh-14))+'px;background:linear-gradient(90deg,'+c+','+c+' 70%,rgba(0,0,0,.2)),'+c+';color:'+textOn(c);
+        const t=document.createElement('span');t.textContent=b.title||'Untitled';el.append(t);
+        if(b.author&&d.h>.8){const s=document.createElement('small');s.textContent=b.author.split(' ').pop();el.append(s)}
+        el.setAttribute('aria-label',(b.title||'Untitled')+(b.author?' by '+b.author:''));
+        el.onclick=()=>show(b);row.append(el);
+      });
+      if(ri===rows.length-1){const e=document.createElement('div');e.className='end';e.style.marginLeft='auto';row.append(e)}
+      sh.append(row);
+    });
+  }
+  $('vClose').onclick=()=>$('view').close();
+  let t;addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(render,80)});render();
+}
+const escH=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+function buildPage(){
+  const data=JSON.stringify(sorted().map(({id,title,author,finished,rating,color,note})=>({id,title,author,finished,rating,color,note}))).replace(/</g,'\\u003c');
+  const css=document.querySelector('style').textContent;
+  const fonts=document.querySelector('link[rel=stylesheet]').outerHTML;
+  const n=books.length,when=new Date().toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric'});
+  const S='script';
+  return ['<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">',
+    '<title>'+escH(shelfName)+'</title>',fonts,'<style>'+css+'</style></head><body>',
+    '<main class="band"><header><div><h1>'+escH(shelfName)+'</h1><p class="sub">'+n+' book'+(n===1?'':'s')+' read · tap a spine for details</p></div></header>',
+    '<section id="shelf" aria-label="Bookshelf"></section><p class="note">Snapshot from '+escH(when)+'</p></main>',
+    '<dialog id="view"><div class="det"><h2 id="vT"></h2><p class="meta" id="vA"></p><p class="meta" id="vM"></p><p id="vN" style="margin:0"></p>',
+    '<div class="foot"><button class="btn pri" type="button" id="vClose">Close</button></div></div></dialog>',
+    '<'+S+'>{const B='+data+';const PAL='+JSON.stringify(PAL)+';',
+    'const hash='+hash+';const colorOf='+colorOf+';const lum='+lum+';const textOn='+textOn+';const dims='+dims+';',
+    chunk.toString()+'('+standaloneMain+')()}</'+S+'>',
+    '</body></html>'].join('\n');
+}
+$('pgBtn').onclick=async()=>{
+  if(!dl)return;
+  try{await dl.save({filename:`${shelfName.replace(/[^\w\- ]+/g,'').trim()||'bookshelf'}.html`,data:buildPage()});toast('Saved \u2014 send the file to your friends')}
+  catch(e){if(e?.code!=='declined')toast(e?.code==='host_unavailable'?'Open this page in a browser to save':'Couldn’t save the page')}
+};
+
+new ResizeObserver(()=>{clearTimeout(render.t);render.t=setTimeout(render,80)}).observe($('shelf'));
+
+$('bkBtn').onclick=()=>{dl.save({filename:`${shelfName.replace(/[^\w\- ]+/g,'').trim()||'bookshelf'} backup.json`,data:JSON.stringify({name:shelfName,books},null,1)});toast('Backup saved')};
+$('rsBtn').onclick=()=>$('rsFile').click();
+$('rsFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const j=JSON.parse(await f.text());if(!Array.isArray(j.books))throw 0;
+  books=j.books.filter(b=>b&&typeof b.title==='string').map(b=>({id:String(b.id||Math.random().toString(36).slice(2)),title:b.title.slice(0,120),author:String(b.author||'').slice(0,80),finished:/^\d{4}-\d{2}$/.test(b.finished)?b.finished:'',rating:Math.max(0,Math.min(5,b.rating|0)),color:/^#[0-9a-f]{6}$/i.test(b.color)?b.color:null,note:String(b.note||'').slice(0,400),addedAt:+b.addedAt||0}));
+  if(typeof j.name==='string'&&j.name.trim())shelfName=j.name.trim().slice(0,60);toast(`Restored ${books.length} books`);after()}catch{toast('That file isn\u2019t a bookshelf backup')}e.target.value=''};
+try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j){books=Array.isArray(j.books)?j.books:[];if(j.name)shelfName=j.name}}catch{canStore=false}
+after();
+}
+</script>
+</body>
+</html>
