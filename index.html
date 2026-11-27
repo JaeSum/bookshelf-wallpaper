@@ -246,17 +246,12 @@ function vtext(x,t,cx,y0,len,align){x.save();x.translate(cx,y0);x.rotate(Math.PI
 function drawSpine(x,b,w,h,k){
   const c=colorOf(b),bible=b.author==='The Bible',ac=b.accent||null,hv=hash(b.id+'v');
   const v0=bible?0:hv%5,v=w<26*k&&(v0===1||v0===3)?0:v0,F=bible?FONTS[3]:v===4?{f:'"Playfair Display"',w:700,up:0}:FONTS[hash(b.id+'f')%FONTS.length];
+  if(b.cover&&!drawSpine.plain){const e=coverImg(b.cover);if(e.ok){drawCoverSpine(x,b,w,h,k,e.im,F);return}}
   const band=ac||rgba(textOn(c),.35);let tc=bible&&ac?ac:textOn(c);
   x.fillStyle=c;x.fillRect(0,0,w,h);
   let top=18*k,bot=h-18*k,auPos='end',emblem=false,ital=v===4,ttc=tc;
   if(v===0){x.fillStyle=band;x.fillRect(0,11*k,w,2.5*k);x.fillRect(0,h-13.5*k,w,2.5*k);top=22*k;bot=h-22*k}
-  else if(v===1){const L=lum(c)>140?'#2b2623':'#f2ecdf',ly=Math.round(h*.11),ttl=F.up?(b.title||'Untitled').toUpperCase():(b.title||'Untitled');
-    const tt=fit(x,ttl,F,false,Math.min(13*k,(w-14*k)*.62),7*k,h*.74-14*k),lh=Math.max(h*.36,Math.min(h*.74,tt.tw+16*k));
-    x.fillStyle=L;x.fillRect(3*k,ly,w-6*k,lh);x.strokeStyle=rgba(textOn(L),.35);x.lineWidth=.8*k;x.strokeRect(5.5*k,ly+2.5*k,w-11*k,lh-5*k);
-    x.font=F.w+' '+tt.s+'px '+F.f;x.fillStyle=textOn(L);vtext(x,tt.t,w/2,ly+7*k,lh-14*k,'center');
-    top=ly+lh+8*k;bot=h-14*k;
-    if(b.author&&bot-top>20*k){const au=b.author.split(' ').pop(),a=fit(x,F.up?au.toUpperCase():au,F,false,Math.min(10*k,(w-8*k)*.5),7*k,bot-top);if(!a.t.endsWith('…')){x.fillStyle=tc;x.globalAlpha=.85;vtext(x,a.t,w/2,top,bot-top,'center');x.globalAlpha=1}}
-    finish(x,w,h,k);return}
+  else if(v===1){const bh=Math.round(h*.15);x.fillStyle=band;x.fillRect(0,h-bh,w,bh);x.fillRect(0,h-bh-4*k,w,1.2*k);x.fillRect(0,12*k,w,1.2*k);top=20*k;bot=h-bh-12*k}
   else if(v===2){const bh=Math.round(h*.12);x.fillStyle=band;x.fillRect(0,0,w,bh);x.fillRect(0,bh+3*k,w,1.2*k);top=bh+12*k;bot=h-24*k;emblem=true}
   else if(v===3){auPos='start';top=14*k;bot=h-24*k;emblem=true}
   else{x.fillStyle=band;for(const y of [9,13])x.fillRect(0,y*k,w,1.2*k);for(const y of [10.2,14.2])x.fillRect(0,h-y*k,w,1.2*k);top=22*k;bot=h-22*k}
@@ -266,15 +261,28 @@ function drawSpine(x,b,w,h,k){
   let au=b.author?b.author.split(' ').pop():'';if(F.up)au=au.toUpperCase();
   let aFit=null,gap=8*k;
   if(au&&w>=22*k){aFit=fit(x,au,F,ital,Math.min(10*k,(w-8*k)*.5)*big,7*k,len*.34);if(aFit.t!==au)aFit=null}
-  const ts=Math.max(7*k,Math.min(15*k*big,(w-8*k)*.62)),tmin=Math.min(9*k,ts);
+  const ts=Math.max(7*k,Math.min(15*k*big,(w-8*k)*.62)),tmin=Math.min(7.5*k,ts);
   let tFit=fit(x,title,F,ital,ts,tmin,len-(aFit?aFit.tw+gap:0));
   if(aFit&&tFit.t!==title){aFit=null;tFit=fit(x,title,F,ital,ts,tmin,len)}
-  x.fillStyle=ttc;
+  x.fillStyle=ttc;x.shadowColor=lum(c)>140?'rgba(255,255,255,.45)':'rgba(0,0,0,.4)';x.shadowBlur=.6*k;x.shadowOffsetY=.6*k;
   if(aFit){
     const af=(ital?'italic ':'')+F.w+' '+aFit.s+'px '+F.f;
     if(auPos==='start'){x.font=af;x.globalAlpha=.85;vtext(x,aFit.t,w/2,top,aFit.tw,'start');x.globalAlpha=1;x.font=(ital?'italic ':'')+F.w+' '+tFit.s+'px '+F.f;vtext(x,tFit.t,w/2,top+aFit.tw+gap,len-aFit.tw-gap,'center')}
     else{x.font=(ital?'italic ':'')+F.w+' '+tFit.s+'px '+F.f;vtext(x,tFit.t,w/2,top,len-aFit.tw-gap,'center');x.font=af;x.globalAlpha=.85;vtext(x,aFit.t,w/2,bot-aFit.tw,aFit.tw,'start');x.globalAlpha=1}
   }else vtext(x,tFit.t,w/2,top,len,'center');
+  x.shadowColor='transparent';x.shadowBlur=0;x.shadowOffsetY=0;
+  finish(x,w,h,k);
+}
+const COV=new Map();
+function coverImg(id){let e=COV.get(id);if(!e){const im=new Image();im.crossOrigin='anonymous';e={im,ok:false,done:false};
+  e.p=new Promise(r=>{im.onload=()=>{e.ok=im.naturalWidth>20&&im.naturalHeight>20;e.done=true;r()};im.onerror=()=>{e.done=true;r()}});
+  e.p.then(()=>{clearTimeout(coverImg.t);coverImg.t=setTimeout(()=>dispatchEvent(new Event('covers')),120)});
+  im.src='https://covers.openlibrary.org/b/id/'+id+'-L.jpg?default=false';COV.set(id,e)}return e}
+const coversReady=list=>Promise.race([Promise.all(list.filter(b=>b.cover).map(b=>coverImg(b.cover).p)),new Promise(r=>setTimeout(r,8000))]);
+function drawCoverSpine(x,b,w,h,k,img,F){
+  const iw=img.naturalWidth,ih=img.naturalHeight;let sx,sy,sw,sh;
+  if(w/h>iw/ih){sw=iw;sh=iw*h/w;sx=0;sy=(ih-sh)/2}else{sh=ih;sw=ih*w/h;sy=0;sx=(iw-sw)/2}
+  x.drawImage(img,sx,sy,sw,sh,0,0,w,h);
   finish(x,w,h,k);
 }
 function finish(x,w,h,k){
@@ -459,6 +467,7 @@ $('liveCopy').onclick=async()=>copyText(await liveLink(),'Live wallpaper link co
 let prepTok=0;
 async function prepare(){
   const tok=++prepTok;$('wpSave').disabled=true;wpBlob=null;
+  await coversReady(books);if(tok!==prepTok)return;
   const [W,H]=size(),cv=document.createElement('canvas');paint(cv,W,H,$('wpLabel').checked);
   const blob=await new Promise(r=>cv.toBlob(r,'image/png'));
   if(tok!==prepTok)return;
@@ -665,7 +674,7 @@ function startLive(canvas,getList,opt){
   function frame(now){
     if(!alive)return;raf=requestAnimationFrame(frame);
     if(!S||!S.books.length){return}
-    const T=secs(),el=(now-start)/1000,cyc=Math.floor(el/T),t=el-cyc*T,it=S.books[order[cyc%order.length]];
+    const T=secs(),el=(now-start)/1000,cyc=Math.floor(el/T),t=el-cyc*T,it=S.books[cyc%S.books.length];if(!it)return;
     const rise=Math.min(1.1,T*.08),fade=Math.min(1.4,T*.1),liftMax=34*S.k;
     let lift=t<rise?ease(t/rise):t>T-rise-.3?ease(Math.max(0,(T-.3-t)/rise)):1;lift*=liftMax;
     let a=t<rise?0:t<rise+fade?ease((t-rise)/fade):t>T-rise-fade-.3?ease(Math.max(0,(T-rise-.3-t)/fade)):1;
@@ -725,6 +734,7 @@ async function unpackShelf(s){
 const siteUrl=()=>location.origin+location.pathname;
 async function copyText(t,msg){try{await navigator.clipboard.writeText(t);toast(msg)}catch{prompt?.('Copy this link:',t)}}
 
+addEventListener('covers',()=>{if(!document.body.classList.contains('live')){render();live?.rebuild();if($('edit').open)drawPick()}});
 $('shareBtn').onclick=async()=>{$('more').close();copyText(siteUrl()+'#shelf:'+await packShelf(),'Share link copied — send it to anyone')};
 $('ownBtn').onclick=()=>{location.hash='';location.reload()};
 addEventListener('hashchange',()=>location.reload());
@@ -746,7 +756,8 @@ const fontsReady=Promise.all(FONT_LOADS.map(f=>document.fonts.load(f).catch(()=>
     let cfg={books,name:shelfName,bg:wpBg,secs:30,label:true};
     if(h.length>6){try{cfg=await unpackShelf(h.slice(6))}catch{}}
     books=cfg.books;shelfName=cfg.name;document.body.classList.add('live');document.title=shelfName;
-    await fontsReady;const L=startLive($('live'),()=>sorted(),{secs:()=>cfg.secs,bg:()=>cfg.bg,label:()=>cfg.label});
+    await fontsReady;await coversReady(books);const L=startLive($('live'),()=>sorted(),{secs:()=>cfg.secs,bg:()=>cfg.bg,label:()=>cfg.label});
+    addEventListener('covers',()=>L.rebuild());
     return;
   }
   if(h.startsWith('#shelf:')){
