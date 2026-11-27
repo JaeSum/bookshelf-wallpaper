@@ -283,6 +283,16 @@ function drawCoverSpine(x,b,w,h,k,img,F){
   const iw=img.naturalWidth,ih=img.naturalHeight;let sx,sy,sw,sh;
   if(w/h>iw/ih){sw=iw;sh=iw*h/w;sx=0;sy=(ih-sh)/2}else{sh=ih;sw=ih*w/h;sy=0;sx=(iw-sw)/2}
   x.drawImage(img,sx,sy,sw,sh,0,0,w,h);
+  const c=colorOf(b),ink=textOn(c),title=F.up?(b.title||'Untitled').toUpperCase():(b.title||'Untitled');
+  const t=fit(x,title,F,false,Math.max(7*k,Math.min(14*k,(w-8*k)*.6)),7*k,h*.7-22*k);
+  const ll=Math.min(h*.78,t.tw+24*k),ly=Math.max(10*k,(h-ll)*.42);
+  // printed title panel: full width, crisp, slightly translucent so the art's texture shows through
+  x.fillStyle=rgba(c,.9);x.fillRect(0,ly,w,ll);
+  x.fillStyle=rgba(ink,.38);x.fillRect(0,ly+3.5*k,w,Math.max(1,.9*k));x.fillRect(0,ly+ll-4.4*k,w,Math.max(1,.9*k));
+  x.font=F.w+' '+t.s+'px '+F.f;x.fillStyle=ink;
+  x.shadowColor=lum(c)>140?'rgba(255,255,255,.45)':'rgba(0,0,0,.4)';x.shadowBlur=.6*k;x.shadowOffsetY=.6*k;
+  vtext(x,t.t,w/2,ly+(ll-t.tw)/2,t.tw,'start');
+  x.shadowColor='transparent';x.shadowBlur=0;x.shadowOffsetY=0;
   finish(x,w,h,k);
 }
 function finish(x,w,h,k){
@@ -662,7 +672,7 @@ function drawThought(x,S,th){
 /* ---------- live animation ---------- */
 const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
 function startLive(canvas,getList,opt){
-  const ctx=canvas.getContext('2d');let S=null,order=[],start=performance.now(),last='',raf=0,alive=true;
+  const ctx=canvas.getContext('2d');let S=null,order=[],bag=[],curCyc=-1,curId=null,start=performance.now(),last='',raf=0,alive=true;
   const secs=()=>Math.max(4,opt.secs()||30);
   function build(){
     const dpr=Math.min(2,devicePixelRatio||1),r=canvas.getBoundingClientRect();
@@ -674,7 +684,9 @@ function startLive(canvas,getList,opt){
   function frame(now){
     if(!alive)return;raf=requestAnimationFrame(frame);
     if(!S||!S.books.length){return}
-    const T=secs(),el=(now-start)/1000,cyc=Math.floor(el/T),t=el-cyc*T,it=S.books[cyc%S.books.length];if(!it)return;
+    const T=secs(),el=(now-start)/1000,cyc=Math.floor(el/T),t=el-cyc*T;
+    if(cyc!==curCyc){curCyc=cyc;if(!bag.length){bag=S.books.map(it=>it.b.id).sort(()=>Math.random()-.5);if(bag.length>1&&bag[0]===curId)bag.push(bag.shift())}curId=bag.shift()}
+    const it=S.books.find(i=>i.b.id===curId)||S.books[0];if(!it)return;
     const rise=Math.min(1.1,T*.08),fade=Math.min(1.4,T*.1),liftMax=34*S.k;
     let lift=t<rise?ease(t/rise):t>T-rise-.3?ease(Math.max(0,(T-.3-t)/rise)):1;lift*=liftMax;
     let a=t<rise?0:t<rise+fade?ease((t-rise)/fade):t>T-rise-fade-.3?ease(Math.max(0,(T-rise-.3-t)/fade)):1;
