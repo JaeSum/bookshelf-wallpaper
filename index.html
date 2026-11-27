@@ -20,6 +20,7 @@
 --panel:light-dark(#ffffff,#16201f);--line:light-dark(#d6dfdc,#2f4245);--hover:light-dark(#eef3f1,#1f2c2b);
 --accent:light-dark(#c4472f,#ff8a6b)}
 *{box-sizing:border-box;min-width:0}
+[hidden]{display:none!important}
 body{margin:0;background:radial-gradient(120% 80% at 50% 0%,var(--wall),var(--wall2));color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;overflow-x:clip;min-height:100vh}
 .band{padding:clamp(20px,3.5vw,48px) max(4vw,16px);max-width:1240px;margin:0 auto}
 header{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 20px;justify-content:space-between}
@@ -232,7 +233,7 @@ function showBook(b){fillView(b);$('vEdit').onclick=()=>{$('view').close();openE
 function drawStars(){const s=$('stars');s.replaceChildren();for(let i=1;i<=5;i++){const b=document.createElement('button');b.type='button';b.textContent='★';b.className=i<=rating?'on':'';b.setAttribute('aria-label',`${i} star${i>1?'s':''}`);b.onclick=()=>{rating=rating===i?0:i;drawStars()};s.append(b)}}
 function drawSw(){
   const s=$('sw');s.replaceChildren();
-  const opts=(coverColor?[[coverColor,coverAccent,'From the cover']]:[]).concat(PAL.map(c=>[c,null,'Colour '+c]));
+  const opts=(coverColor?[[coverColor,coverAccent,'Suggested colour']]:[]).concat(PAL.map(c=>[c,null,'Colour '+c]));
   opts.forEach(([c,ac,label],i)=>{const b=document.createElement('button');b.type='button';b.style.background=ac?`linear-gradient(${ac} 0 30%,${c} 30%)`:c;b.title=label;b.setAttribute('aria-label',label);b.setAttribute('aria-pressed',String(pickColor===c&&(pickAccent||null)===(ac||null)));b.onclick=()=>{pickColor=c;pickAccent=ac;drawSw();drawPick()};s.append(b)});
 }
 function draft(){return {id:formId,title:$('t').value.trim(),author:$('a').value.trim(),color:pickColor,accent:pickAccent}}
@@ -245,7 +246,7 @@ function drawPick(){
 function openEdit(b){
   editing=b||null;formId=b?.id||Date.now().toString(36)+Math.random().toString(36).slice(2,7);
   $('fTitle').textContent=b?'Edit book':'Add a book';
-  $('q').value='';$('res').replaceChildren();
+  clearTimeout(searchT);searchCtl?.abort();$('q').value='';$('res').replaceChildren();
   $('t').value=b?.title||'';$('a').value=b?.author||'';$('d').value=b?.finished||new Date().toISOString().slice(0,7);$('n').value=b?.note||'';
   rating=b?.rating||0;pickCover=b?.cover||null;coverColor=b?.cover?b.color:null;coverAccent=b?.cover?b.accent||null:null;
   pickColor=b?.color||PAL[hash(formId)%PAL.length];pickAccent=b?.accent||null;
@@ -258,30 +259,48 @@ function latinName(doc){
   const nice=latin.find(n=>n.includes(' ')&&!n.split(/[ .]/).some(w=>w.length>2&&w===w.toUpperCase()));
   return nice||latin[0]||all[0]||'';
 }
+const BIBLE=[
+ ['Old Testament','#4a1f1c','#c9a45c',['Genesis','Exodus','Leviticus','Numbers','Deuteronomy','Joshua','Judges','Ruth','1 Samuel','2 Samuel','1 Kings','2 Kings','1 Chronicles','2 Chronicles','Ezra','Nehemiah','Esther','Job','Psalms','Proverbs','Ecclesiastes','Song of Songs','Isaiah','Jeremiah','Lamentations','Ezekiel','Daniel','Hosea','Joel','Amos','Obadiah','Jonah','Micah','Nahum','Habakkuk','Zephaniah','Haggai','Zechariah','Malachi']],
+ ['New Testament','#1f2a44','#c9a45c',['Matthew','Mark','Luke','John','Acts','Romans','1 Corinthians','2 Corinthians','Galatians','Ephesians','Philippians','Colossians','1 Thessalonians','2 Thessalonians','1 Timothy','2 Timothy','Titus','Philemon','Hebrews','James','1 Peter','2 Peter','1 John','2 John','3 John','Jude','Revelation']],
+ ['Deuterocanon','#2f3d2a','#c9a45c',['Tobit','Judith','1 Maccabees','2 Maccabees','Wisdom','Sirach','Baruch']]];
+const BIBLE_ALIAS={'Psalms':['Psalm'],'Song of Songs':['Song of Solomon','Canticles'],'Ecclesiastes':['Qoheleth'],'Acts':['Acts of the Apostles'],'Revelation':['Revelations','Apocalypse'],'Sirach':['Ecclesiasticus'],'Wisdom':['Wisdom of Solomon']};
+const bnorm=v=>v.toLowerCase().trim().replace(/^(the\s+)?(holy\s+)?(gospel\s+(according\s+)?(to|of)|book\s+of(\s+the)?|letter\s+(to|of)(\s+the)?|epistle\s+(to|of)(\s+the)?|first\s+letter\s+of|second\s+letter\s+of)\s+/,'').replace(/^(third|iii)\s+/,'3').replace(/^(second|ii)\s+/,'2').replace(/^(first|i)\s+/,'1').replace(/[^a-z0-9]/g,'');
+const BIBLE_ALL=[{title:'The Holy Bible',sub:'The whole Bible',color:'#2b1a14',accent:'#c9a45c',keys:['bible','holybible','scripture']}].concat(BIBLE.flatMap(([part,color,accent,names])=>names.map(n=>({title:n,sub:'Bible · '+part,color,accent,keys:[n,...(BIBLE_ALIAS[n]||[])].map(bnorm)}))));
+function bibleHits(q){
+  const n=bnorm(q);if(n.length<2)return [];
+  if(['bible','thebible','holybible','scripture'].includes(n))return BIBLE_ALL.map(h=>({...h,bible:true}));
+  const sw=[],inc=[];
+  for(const h of BIBLE_ALL){if(h.keys.some(k=>k.startsWith(n)))sw.push(h);else if(n.length>=3&&h.keys.some(k=>k.includes(n)))inc.push(h)}
+  return sw.concat(inc).slice(0,12).map(h=>({...h,bible:true}));
+}
+function hitBtn(h){
+  const b=document.createElement('button');b.type='button';b.className='hit';
+  if(h.cover_i){const im=document.createElement('img');im.loading='lazy';im.alt='';im.src=coverUrl(h.cover_i,'S');b.append(im)}
+  else{const nc=document.createElement('div');nc.className='nocover';if(h.color){nc.style.background=`linear-gradient(${h.accent} 0 3px,transparent 3px calc(100% - 3px),${h.accent} 0),${h.color}`}b.append(nc)}
+  const tx=document.createElement('div'),bt=document.createElement('b'),sp=document.createElement('span');
+  bt.textContent=h.title;sp.textContent=h.bible?h.sub:[h.au,h.first_publish_year].filter(Boolean).join(' · ');tx.append(bt,sp);b.append(tx);
+  b.onclick=()=>choose(h);return b;
+}
 let searchCtl=null,searchT=null,pickToken=0;
 $('q').addEventListener('input',()=>{clearTimeout(searchT);const v=$('q').value.trim();if(v.length<2){searchCtl?.abort();$('res').replaceChildren();return}searchT=setTimeout(()=>search(v),350)});
 $('q').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();clearTimeout(searchT);const v=$('q').value.trim();if(v.length>1)search(v)}});
 async function search(v){
   searchCtl?.abort();searchCtl=new AbortController();
-  const res=$('res'),msg=document.createElement('p');msg.textContent='Searching…';res.replaceChildren(msg);
+  const res=$('res'),local=bibleHits(v),msg=document.createElement('p');
+  res.replaceChildren(...local.map(hitBtn));msg.textContent='Searching…';res.append(msg);
   try{
     const r=await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(v)}&fields=key,title,author_name,author_alternative_name,cover_i,first_publish_year&limit=15`,{signal:searchCtl.signal});
     if(!r.ok)throw new Error(r.status);
     const j=await r.json(),seen=new Set(),hits=[];
     for(const doc of j.docs||[]){const au=latinName(doc),k=(doc.title+'|'+au).toLowerCase();if(!doc.title||seen.has(k))continue;seen.add(k);hits.push({...doc,au});if(hits.length>=7)break}
-    res.replaceChildren();
-    if(!hits.length){msg.textContent='No matches. Try fewer words, or type it in below.';res.append(msg);return}
-    for(const h of hits){
-      const b=document.createElement('button');b.type='button';b.className='hit';
-      if(h.cover_i){const im=document.createElement('img');im.loading='lazy';im.alt='';im.src=coverUrl(h.cover_i,'S');b.append(im)}else{const nc=document.createElement('div');nc.className='nocover';b.append(nc)}
-      const tx=document.createElement('div'),bt=document.createElement('b'),sp=document.createElement('span');
-      bt.textContent=h.title;sp.textContent=[h.au,h.first_publish_year].filter(Boolean).join(' · ');tx.append(bt,sp);b.append(tx);
-      b.onclick=()=>choose(h);res.append(b);
-    }
-  }catch(e){if(e.name==='AbortError')return;msg.textContent='Search isn’t reachable right now. You can type the title and author below.';res.replaceChildren(msg);$('man').open=true}
+    if(searchCtl.signal.aborted)return;msg.remove();
+    if(!hits.length&&!local.length){msg.textContent='No matches. Try fewer words, or type it in below.';res.append(msg);return}
+    for(const h of hits)res.append(hitBtn(h));
+  }catch(e){if(e.name==='AbortError')return;if(local.length){msg.remove();return}msg.textContent='Search isn’t reachable right now. You can type the title and author below.';$('man').open=true}
 }
 async function choose(h){
-  const tok=++pickToken;
+  const tok=++pickToken;clearTimeout(searchT);searchCtl?.abort();
+  if(h.bible){$('t').value=h.title;$('a').value='The Bible';$('q').value='';$('res').replaceChildren();pickCover=null;coverColor=h.color;coverAccent=h.accent;pickColor=h.color;pickAccent=h.accent;drawSw();drawPick();return}
   $('t').value=h.title.slice(0,120);$('a').value=(h.au||'').slice(0,80);$('q').value='';$('res').replaceChildren();
   pickCover=h.cover_i||null;coverColor=null;coverAccent=null;pickColor=PAL[hash(formId+h.title)%PAL.length];pickAccent=null;
   drawSw();drawPick();
