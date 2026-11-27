@@ -6,19 +6,17 @@
 <title>My Bookshelf</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Barlow+Condensed:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Barlow+Condensed:wght@500;600&family=Inter:wght@400;500;600&family=Oswald:wght@500&family=Playfair+Display:ital,wght@0,700;1,700&family=Libre+Baskerville:wght@700&family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
 /* VOICE: warm, personal, a little proud — a reading wall you show friends.
    IDEA: a real walnut bookshelf mounted on a painted wall; each book read is a spine.
    PICTURE: the shelf itself, rows of spines on planks with bookends, filling the first screen.
    COLOUR and TYPE: deep slate-teal wall (pale sage by day), walnut planks, spines coloured from each book's cover, coral accent; Young Serif, Barlow Condensed, Inter.
    LAYOUT: title row with count and actions, then the shelf full width; search-first add dialog. */
-:root{color-scheme:light dark;
---wall:light-dark(#cfdad6,#203236);--wall2:light-dark(#bfcdc8,#18272a);
---ink:light-dark(#1d2a2c,#eef2ee);--soft:light-dark(#4b5d5f,#a9bab6);
---wood:#7b4b2a;--wood2:#5a331b;--woodlite:#a26a40;
---panel:light-dark(#ffffff,#16201f);--line:light-dark(#d6dfdc,#2f4245);--hover:light-dark(#eef3f1,#1f2c2b);
---accent:light-dark(#c4472f,#ff8a6b)}
+:root{color-scheme:light;
+--wall:#fbf6ef;--wall2:#f3e8dc;--ink:#3d3029;--soft:#8c7a6b;
+--wood:#cfa97c;--wood2:#ad865c;--woodlite:#ead0ad;--back:#f4ebe0;
+--panel:#fffdfa;--line:#ecdfd1;--hover:#f8f0e6;--accent:#c47a5c}
 *{box-sizing:border-box;min-width:0}
 [hidden]{display:none!important}
 body{margin:0;background:radial-gradient(120% 80% at 50% 0%,var(--wall),var(--wall2));color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;overflow-x:clip;min-height:100vh}
@@ -35,19 +33,19 @@ h1 button{all:unset;cursor:pointer}h1 button:focus-visible{outline:2px solid var
 .tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:18px;color:var(--soft);font-size:14px}
 select,input,textarea{font:16px Inter,sans-serif;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:10px;min-height:44px;padding:8px 12px;width:100%}
 .tools select{width:auto}
-#shelf{margin-top:22px;padding:18px 14px 6px;background:linear-gradient(var(--wood2),var(--wood2)) left/14px 100% no-repeat,linear-gradient(var(--wood2),var(--wood2)) right/14px 100% no-repeat,rgba(0,0,0,.14);border-radius:6px;box-shadow:inset 0 10px 30px rgba(0,0,0,.25)}
+#shelf{margin-top:22px;padding:18px 14px 6px;background:linear-gradient(90deg,var(--wood2),var(--wood)) left/14px 100% no-repeat,linear-gradient(270deg,var(--wood2),var(--wood)) right/14px 100% no-repeat,var(--back);border-radius:6px;box-shadow:inset 0 12px 28px rgba(140,95,50,.14),0 18px 40px rgba(140,95,50,.12)}
 .row{position:relative;display:flex;align-items:flex-end;gap:3px;height:214px;padding:0 18px;margin-bottom:22px}
-.row::after{content:"";position:absolute;left:-14px;right:-14px;bottom:-16px;height:16px;background:linear-gradient(var(--woodlite),var(--wood) 35%,var(--wood2));border-radius:2px;box-shadow:0 8px 14px rgba(0,0,0,.3)}
-.spine{position:relative;flex:none;border:0;cursor:pointer;border-radius:3px 3px 1px 1px;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;font:600 15px/1 "Barlow Condensed",sans-serif;letter-spacing:.02em;overflow:hidden;box-shadow:inset 3px 0 0 rgba(255,255,255,.18),inset -4px 0 0 rgba(0,0,0,.18),2px 0 3px rgba(0,0,0,.25);transition:transform .2s}
+.row::after{content:"";position:absolute;left:-14px;right:-14px;bottom:-16px;height:16px;background:linear-gradient(var(--woodlite),var(--wood) 35%,var(--wood2));border-radius:2px;box-shadow:0 8px 14px rgba(140,95,50,.22)}
+.row{gap:1px}
+.spine{position:relative;flex:none;border:0;padding:0;cursor:pointer;border-radius:1px 1px 0 0;display:block;background:none;box-shadow:1px 0 2px rgba(90,60,35,.3);transition:transform .2s}
+.spine canvas{display:block;width:100%;height:100%;border-radius:inherit}
 .spine:hover{transform:translateY(-8px)}
-.spine span{max-height:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.spine small{font-weight:500;font-size:12px;opacity:.8;margin-top:8px;white-space:nowrap}
-.end{flex:none;width:22px;height:120px;border-radius:4px 4px 0 0;background:linear-gradient(90deg,#3a3f44,#6b737a 45%,#2b2f33)}
+.end{flex:none;width:24px;height:110px;border-radius:12px 12px 2px 2px;background:linear-gradient(90deg,#e2cfbb,#f5e9dc 40%,#d8c1aa)}
 .lean{transform-origin:bottom left;transform:rotate(9deg);margin-left:10px}.lean:hover{transform:rotate(9deg) translateY(-6px)}
-.empty{height:214px;display:grid;place-items:center;color:#f1e6d8;text-align:center;font-size:15px;padding:0 20px}
+.empty{height:214px;display:grid;place-items:center;color:var(--soft);text-align:center;font-size:15px;padding:0 20px}
 .note{font-size:13px;color:var(--soft);margin-top:14px}
-dialog{border:0;border-radius:16px;padding:0;width:min(480px,94vw);max-height:92vh;overflow:auto;background:var(--panel);color:var(--ink);box-shadow:0 30px 80px rgba(0,0,0,.45)}
-dialog::backdrop{background:rgba(10,20,20,.55)}
+dialog{border:0;border-radius:16px;padding:0;width:min(480px,94vw);max-height:92vh;overflow:auto;background:var(--panel);color:var(--ink);box-shadow:0 30px 80px rgba(90,60,35,.3)}
+dialog::backdrop{background:rgba(70,50,35,.35)}
 form,.det{padding:22px;display:grid;gap:12px}
 dialog h2{font:400 26px/1.1 "Young Serif",serif;margin:0}
 label{font-size:14px;font-weight:500;display:grid;gap:4px}
@@ -75,10 +73,12 @@ details[open]{display:grid;gap:10px}
 .meta{color:var(--soft);margin:0}
 .vhead{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:start}
 .vhead img{width:84px;border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,.25)}
-#prevImg{width:100%;max-height:46vh;object-fit:contain;border-radius:8px;background:#141f21;display:block;min-height:120px}
-.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9;max-width:92vw;text-align:center}
-.toast.on{opacity:1}
+#prevImg{width:100%;max-height:46vh;object-fit:contain;border-radius:8px;background:var(--hover);display:block;min-height:120px}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9;max-width:92vw;text-align:center;display:flex;gap:14px;align-items:center}
+.toast.on{opacity:1;pointer-events:auto}
+.toast button{all:unset;cursor:pointer;font-weight:600;color:var(--accent);padding:4px 2px}
 .grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.grid3{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:12px}
 @media(max-width:600px){.row{height:184px;padding:0 8px}.spine{font-size:13px}.grid2{grid-template-columns:minmax(0,1fr)}}
 @media(prefers-reduced-motion:reduce){.spine{transition:none}}
 </style>
@@ -126,10 +126,11 @@ details[open]{display:grid;gap:10px}
     <label>Author<input id="a" maxlength="80" autocomplete="off"></label>
     <div><span class="lbl">Spine colour</span><div class="sw" id="sw"></div></div>
   </details>
-  <div class="grid2">
+  <div class="grid3">
     <label>Finished<input id="d" type="month"></label>
-    <div><span class="lbl">Rating</span><div class="stars" id="stars"></div></div>
+    <label>Pages<input id="pg" type="number" inputmode="numeric" min="1" max="5000" placeholder="e.g. 320"></label>
   </div>
+  <div><span class="lbl">Rating</span><div class="stars" id="stars"></div></div>
   <label>Note<textarea id="n" rows="2" maxlength="400" placeholder="What did you think?"></textarea></label>
   <div class="foot"><button class="btn del" type="button" id="del" hidden>Remove</button><button class="btn" type="button" id="cancel">Cancel</button><button class="btn pri" type="submit">Save</button></div>
 </form></dialog>
@@ -137,7 +138,7 @@ details[open]{display:grid;gap:10px}
 <dialog id="view"><div class="det">
   <div class="vhead"><div><h2 id="vT"></h2><p class="meta" id="vA"></p></div><img id="vC" alt="" hidden></div>
   <p class="meta" id="vM"></p><p id="vN" style="margin:0"></p>
-  <div class="foot"><button class="btn" type="button" id="vEdit">Edit</button><button class="btn pri" type="button" id="vClose">Close</button></div>
+  <div class="foot"><button class="btn del" type="button" id="vDel">Remove</button><button class="btn" type="button" id="vEdit">Edit</button><button class="btn pri" type="button" id="vClose">Close</button></div>
 </div></dialog>
 
 <dialog id="wp"><div class="det">
@@ -145,6 +146,9 @@ details[open]{display:grid;gap:10px}
   <label>Size<select id="wpSize">
     <option value="1179x2556">Phone · 1179 × 2556</option><option value="2560x1440">Desktop · 2560 × 1440</option><option value="1920x1080">Desktop · 1920 × 1080</option>
     <option value="3840x2160">4K · 3840 × 2160</option><option value="2048x2732">Tablet · 2048 × 2732</option>
+  </select></label>
+  <label>Background<select id="wpBg">
+    <option value="cream">Cream</option><option value="blush">Blush</option><option value="peach">Peach</option><option value="sage">Sage</option><option value="sky">Sky</option><option value="lavender">Lavender</option>
   </select></label>
   <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="wpLabel" checked style="width:20px;min-height:20px"> Show shelf name and count</label>
   <img id="prevImg" alt="Wallpaper preview">
@@ -164,39 +168,85 @@ const colorOf=b=>b.color||PAL[hash(b.id)%PAL.length];
 const lum=hex=>{const n=parseInt(hex.slice(1),16),r=n>>16,g=n>>8&255,b=n&255;return (r*299+g*587+b*114)/1000};
 const textOn=hex=>lum(hex)>150?'#1d1d1f':'#f7f2ea';
 const rgba=(hex,a)=>{const n=parseInt(hex.slice(1),16);return `rgba(${n>>16},${n>>8&255},${n&255},${a})`};
-const dims=b=>{const h=hash(b.id+'x');return {w:30+Math.min(26,(b.title||'').length*.7)+h%9,h:.72+(h%28)/100}};
+const dims=b=>{const h=hash(b.id+'x'),p=+b.pages;return {w:p>0?Math.max(16,Math.min(72,14+2.2*Math.sqrt(p))):24+Math.min(22,(b.title||'').length*.6)+h%11,h:.66+(h%34)/100}};
 const coverUrl=(id,s)=>`https://covers.openlibrary.org/b/id/${id}-${s}.jpg`;
-function spineArt(b,H,k){
-  const s=hash(b.id+'s')%3;
-  if(s===1){const bh=Math.round(H*.17);return {bands:[{y:0,h:bh},{y:bh+5*k,h:2*k},{y:H-14*k,h:2*k}],top:bh+12*k}}
-  if(s===2)return {bands:[{y:12*k,h:2*k},{y:17*k,h:2*k},{y:H-21*k,h:2*k},{y:H-16*k,h:2*k}],top:26*k};
-  return {bands:[{y:14*k,h:3*k},{y:H-17*k,h:3*k}],top:24*k};
+const FONTS=[{f:'"Barlow Condensed"',w:600,up:0},{f:'Oswald',w:500,up:1},{f:'"Playfair Display"',w:700,up:0},{f:'"Libre Baskerville"',w:700,up:1},{f:'"Bebas Neue"',w:400,up:1},{f:'Inter',w:600,up:0}];
+const FONT_LOADS=['600 20px "Barlow Condensed"','500 20px "Barlow Condensed"','500 20px Oswald','700 20px "Playfair Display"','italic 700 20px "Playfair Display"','700 20px "Libre Baskerville"','400 20px "Bebas Neue"','600 20px Inter','500 20px Inter','400 20px "Young Serif"'];
+function noise(){if(noise.c)return noise.c;const c=document.createElement('canvas');c.width=c.height=96;const x=c.getContext('2d'),im=x.createImageData(96,96);for(let i=0;i<im.data.length;i+=4){const v=Math.random()*255;im.data[i]=im.data[i+1]=im.data[i+2]=v;im.data[i+3]=26}x.putImageData(im,0,0);return noise.c=c}
+function fit(x,txt,F,ital,size,min,maxLen){let s=size;const set=()=>{x.font=(ital?'italic ':'')+F.w+' '+s+'px '+F.f};set();while(s>min&&x.measureText(txt).width>maxLen){s-=.5;set()}let t=txt;while(t.length>1&&x.measureText(t).width>maxLen)t=t.slice(0,-2).trimEnd()+'…';return {t,s,tw:x.measureText(t).width}}
+function vtext(x,t,cx,y0,len,align){x.save();x.translate(cx,y0);x.rotate(Math.PI/2);x.textBaseline='middle';const tw=x.measureText(t).width;x.fillText(t,align==='center'?(len-tw)/2:align==='end'?len-tw:0,0);x.restore()}
+function drawSpine(x,b,w,h,k){
+  const c=colorOf(b),bible=b.author==='The Bible',ac=b.accent||null,hv=hash(b.id+'v');
+  const v0=bible?0:hv%5,v=w<26*k&&(v0===1||v0===3)?0:v0,F=bible?FONTS[3]:v===4?{f:'"Playfair Display"',w:700,up:0}:FONTS[hash(b.id+'f')%FONTS.length];
+  const band=ac||rgba(textOn(c),.35);let tc=bible&&ac?ac:textOn(c);
+  x.fillStyle=c;x.fillRect(0,0,w,h);
+  let top=18*k,bot=h-18*k,auPos='end',emblem=false,ital=v===4,ttc=tc;
+  if(v===0){x.fillStyle=band;x.fillRect(0,11*k,w,2.5*k);x.fillRect(0,h-13.5*k,w,2.5*k);top=22*k;bot=h-22*k}
+  else if(v===1){const L=lum(c)>140?'#2b2623':'#f2ecdf',ly=Math.round(h*.11),ttl=F.up?(b.title||'Untitled').toUpperCase():(b.title||'Untitled');
+    const tt=fit(x,ttl,F,false,Math.min(13*k,(w-14*k)*.62),7*k,h*.74-14*k),lh=Math.max(h*.36,Math.min(h*.74,tt.tw+16*k));
+    x.fillStyle=L;x.fillRect(3*k,ly,w-6*k,lh);x.strokeStyle=rgba(textOn(L),.35);x.lineWidth=.8*k;x.strokeRect(5.5*k,ly+2.5*k,w-11*k,lh-5*k);
+    x.font=F.w+' '+tt.s+'px '+F.f;x.fillStyle=textOn(L);vtext(x,tt.t,w/2,ly+7*k,lh-14*k,'center');
+    top=ly+lh+8*k;bot=h-14*k;
+    if(b.author&&bot-top>20*k){const au=b.author.split(' ').pop(),a=fit(x,F.up?au.toUpperCase():au,F,false,Math.min(10*k,(w-8*k)*.5),7*k,bot-top);if(!a.t.endsWith('…')){x.fillStyle=tc;x.globalAlpha=.85;vtext(x,a.t,w/2,top,bot-top,'center');x.globalAlpha=1}}
+    finish(x,w,h,k);return}
+  else if(v===2){const bh=Math.round(h*.12);x.fillStyle=band;x.fillRect(0,0,w,bh);x.fillRect(0,bh+3*k,w,1.2*k);top=bh+12*k;bot=h-24*k;emblem=true}
+  else if(v===3){auPos='start';top=14*k;bot=h-24*k;emblem=true}
+  else{x.fillStyle=band;for(const y of [9,13])x.fillRect(0,y*k,w,1.2*k);for(const y of [10.2,14.2])x.fillRect(0,h-y*k,w,1.2*k);top=22*k;bot=h-22*k}
+  if(emblem){x.fillStyle=rgba(tc.startsWith('#')?tc:'#ffffff',.75);const ey=h-12*k;if(hv%2){x.beginPath();x.arc(w/2,ey,3.2*k,0,7);x.fill()}else x.fillRect(w/2-3*k,ey-3*k,6*k,6*k)}
+  let title=b.title||'Untitled';if(F.up)title=title.toUpperCase();
+  const len=bot-top,big=F.f.includes('Bebas')?1.2:1;
+  let au=b.author?b.author.split(' ').pop():'';if(F.up)au=au.toUpperCase();
+  let aFit=null,gap=8*k;
+  if(au&&w>=22*k){aFit=fit(x,au,F,ital,Math.min(10*k,(w-8*k)*.5)*big,7*k,len*.34);if(aFit.t!==au)aFit=null}
+  const ts=Math.max(7*k,Math.min(15*k*big,(w-8*k)*.62)),tmin=Math.min(9*k,ts);
+  let tFit=fit(x,title,F,ital,ts,tmin,len-(aFit?aFit.tw+gap:0));
+  if(aFit&&tFit.t!==title){aFit=null;tFit=fit(x,title,F,ital,ts,tmin,len)}
+  x.fillStyle=ttc;
+  if(aFit){
+    const af=(ital?'italic ':'')+F.w+' '+aFit.s+'px '+F.f;
+    if(auPos==='start'){x.font=af;x.globalAlpha=.85;vtext(x,aFit.t,w/2,top,aFit.tw,'start');x.globalAlpha=1;x.font=(ital?'italic ':'')+F.w+' '+tFit.s+'px '+F.f;vtext(x,tFit.t,w/2,top+aFit.tw+gap,len-aFit.tw-gap,'center')}
+    else{x.font=(ital?'italic ':'')+F.w+' '+tFit.s+'px '+F.f;vtext(x,tFit.t,w/2,top,len-aFit.tw-gap,'center');x.font=af;x.globalAlpha=.85;vtext(x,aFit.t,w/2,bot-aFit.tw,aFit.tw,'start');x.globalAlpha=1}
+  }else vtext(x,tFit.t,w/2,top,len,'center');
+  finish(x,w,h,k);
+}
+function finish(x,w,h,k){
+  x.globalAlpha=1;x.fillStyle=x.createPattern(noise(),'repeat');x.fillRect(0,0,w,h);
+  const g=x.createLinearGradient(0,0,w,0);g.addColorStop(0,'rgba(0,0,0,.40)');g.addColorStop(.1,'rgba(255,255,255,.08)');g.addColorStop(.28,'rgba(255,255,255,.17)');g.addColorStop(.5,'rgba(255,255,255,0)');g.addColorStop(.86,'rgba(0,0,0,.14)');g.addColorStop(1,'rgba(0,0,0,.45)');
+  x.fillStyle=g;x.fillRect(0,0,w,h);x.fillStyle='rgba(255,255,255,.14)';x.fillRect(0,0,w,Math.max(1,k));
+  const bg=x.createLinearGradient(0,h-8*k,0,h);bg.addColorStop(0,'rgba(0,0,0,0)');bg.addColorStop(1,'rgba(0,0,0,.22)');x.fillStyle=bg;x.fillRect(0,h-8*k,w,8*k);
 }
 function spineEl(b,scale,rh){
-  const d=dims(b),c=colorOf(b),H=Math.round(d.h*(rh-14)),art=spineArt(b,H,scale),ac=b.accent||rgba(textOn(c),.35);
-  const el=document.createElement('button');el.type='button';el.className='spine';
-  el.style.width=Math.round(d.w*scale)+'px';el.style.height=H+'px';el.style.color=textOn(c);
-  el.style.background=art.bands.map(r=>`linear-gradient(${ac},${ac}) 0 ${r.y}px/100% ${r.h}px no-repeat`).concat(c).join(',');
-  el.style.padding=`${art.top}px 0 ${22*scale}px`;
-  const t=document.createElement('span');t.textContent=b.title||'Untitled';el.append(t);
-  if(scale<.8)el.style.fontSize=Math.round(15*scale*10)/10+'px';
-  const last=b.author?b.author.split(' ').pop():'',cap=(H-art.top-22*scale)/(15*scale*.47);
-  if(last&&d.h>.8&&(b.title||'').length+last.length*.8+2<=cap){const s=document.createElement('small');s.textContent=last;if(scale<.8)s.style.fontSize=Math.round(12*scale)+'px';el.append(s)}
+  const d=dims(b),W=Math.round(d.w*scale),H=Math.round(d.h*(rh-14));
+  const el=document.createElement('button');el.type='button';el.className='spine';el.style.width=W+'px';el.style.height=H+'px';
+  const cv=document.createElement('canvas'),r=Math.min(3,window.devicePixelRatio||1);cv.width=Math.round(W*r);cv.height=Math.round(H*r);
+  const x=cv.getContext('2d');x.scale(r,r);drawSpine(x,b,W,H,scale);el.append(cv);
   el.setAttribute('aria-label',(b.title||'Untitled')+(b.author?' by '+b.author:''));
   return el;
 }
 function chunk(list,width,scale){
   const rows=[[]];let used=0;
-  for(const b of list){const w=dims(b).w*scale+3;if(used+w>width-30*scale&&rows.at(-1).length){rows.push([]);used=0}rows.at(-1).push(b);used+=w}
+  for(const b of list){const w=dims(b).w*scale+1;if(used+w>width-30*scale&&rows.at(-1).length){rows.push([]);used=0}rows.at(-1).push(b);used+=w}
   return rows;
 }
-const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),3200)};
+const toast=(m,label,fn)=>{const t=$('toast'),sp=document.createElement('span');sp.textContent=m;t.replaceChildren(sp);if(label){const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=()=>{t.classList.remove('on');fn()};t.append(b)}t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),label?6000:3200)};
+function removeBook(id){const i=books.findIndex(b=>b.id===id);if(i<0)return;const [gone]=books.splice(i,1);after();toast(`Removed “${gone.title}”`,'Undo',()=>{books.splice(Math.min(i,books.length),0,gone);after();toast('Put back on the shelf')})}
 const hue=hex=>{const n=parseInt(hex.slice(1),16);let r=(n>>16)/255,g=(n>>8&255)/255,b=(n&255)/255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;if(d<.08)return 400+(1-mx)*50;let h=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;return (h*60+360)%360};
 const fileBase=()=>shelfName.replace(/[^\w\- ]+/g,'').trim()||'bookshelf';
 function download(data,name,type){const blob=data instanceof Blob?data:new Blob([data],{type});const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),10000)}
-function save(){try{localStorage.setItem(KEY,JSON.stringify({name:shelfName,books}))}catch{$('note').textContent='This browser isn’t saving your books. Use “Back up books” before closing the page.'}}
+let wpBg='cream';
+function save(){try{localStorage.setItem(KEY,JSON.stringify({name:shelfName,books,bg:wpBg}))}catch{$('note').textContent='This browser isn’t saving your books. Use “Back up books” before closing the page.'}}
 function after(){$('pgBtn').hidden=!books.length;save();render()}
 
+async function backfill(){
+  let changed=false;
+  for(const b of books){
+    if(b.pages||b.pagesTried)continue;
+    if(b.author==='The Bible'){const p=biblePages(b.title);if(p){b.pages=p;changed=true;continue}}
+    try{const r=await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(b.title)}${b.author?'&author='+encodeURIComponent(b.author):''}&fields=number_of_pages_median&limit=3`);
+      const j=await r.json(),p=(j.docs||[]).map(d=>d.number_of_pages_median).find(n=>n>0);b.pagesTried=true;if(p){b.pages=p}changed=true}catch{break}
+  }
+  if(changed)after();
+}
 function sorted(){
   const s=$('sort').value,a=[...books];
   if(s==='colour')a.sort((x,y)=>hue(colorOf(x))-hue(colorOf(y)));
@@ -223,11 +273,11 @@ function render(){
 function fillView(b){
   $('vT').textContent=b.title||'Untitled';$('vA').textContent=b.author?`by ${b.author}`:'';
   const when=b.finished?new Date(b.finished+'-01').toLocaleDateString(undefined,{month:'long',year:'numeric'}):'';
-  $('vM').textContent=[when&&`Finished ${when}`,b.rating?'★'.repeat(b.rating)+'☆'.repeat(5-b.rating):''].filter(Boolean).join(' · ');
+  $('vM').textContent=[when&&`Finished ${when}`,b.pages&&`${b.pages} pages`,b.rating?'★'.repeat(b.rating)+'☆'.repeat(5-b.rating):''].filter(Boolean).join(' · ');
   $('vN').textContent=b.note||'';
   const im=$('vC');if(b.cover){im.src=coverUrl(b.cover,'M');im.hidden=false;im.onerror=()=>{im.hidden=true}}else im.hidden=true;
 }
-function showBook(b){fillView(b);$('vEdit').onclick=()=>{$('view').close();openEdit(b)};$('view').showModal()}
+function showBook(b){fillView(b);$('vEdit').onclick=()=>{$('view').close();openEdit(b)};$('vDel').onclick=()=>{$('view').close();removeBook(b.id)};$('view').showModal()}
 
 /* ---- add / edit with search ---- */
 function drawStars(){const s=$('stars');s.replaceChildren();for(let i=1;i<=5;i++){const b=document.createElement('button');b.type='button';b.textContent='★';b.className=i<=rating?'on':'';b.setAttribute('aria-label',`${i} star${i>1?'s':''}`);b.onclick=()=>{rating=rating===i?0:i;drawStars()};s.append(b)}}
@@ -236,10 +286,11 @@ function drawSw(){
   const opts=(coverColor?[[coverColor,coverAccent,'Suggested colour']]:[]).concat(PAL.map(c=>[c,null,'Colour '+c]));
   opts.forEach(([c,ac,label],i)=>{const b=document.createElement('button');b.type='button';b.style.background=ac?`linear-gradient(${ac} 0 30%,${c} 30%)`:c;b.title=label;b.setAttribute('aria-label',label);b.setAttribute('aria-pressed',String(pickColor===c&&(pickAccent||null)===(ac||null)));b.onclick=()=>{pickColor=c;pickAccent=ac;drawSw();drawPick()};s.append(b)});
 }
-function draft(){return {id:formId,title:$('t').value.trim(),author:$('a').value.trim(),color:pickColor,accent:pickAccent}}
+const pagesVal=()=>{const n=Math.round(+$('pg').value);return n>0&&n<=5000?n:null};
+function draft(){return {id:formId,title:$('t').value.trim(),author:$('a').value.trim(),color:pickColor,accent:pickAccent,pages:pagesVal()}}
 function drawPick(){
   const d=draft();$('pick').hidden=!d.title;if(!d.title)return;
-  $('pT').textContent=d.title;$('pA').textContent=d.author;
+  $('pT').textContent=d.title;$('pA').textContent=[d.author,d.pages&&d.pages+' pages'].filter(Boolean).join(' · ');
   const pv=$('pv');pv.replaceChildren(spineEl(d,.62,214));pv.firstChild.tabIndex=-1;
   const im=$('pc');if(pickCover){im.src=coverUrl(pickCover,'M');im.hidden=false;im.onerror=()=>{im.hidden=true}}else im.hidden=true;
 }
@@ -247,7 +298,7 @@ function openEdit(b){
   editing=b||null;formId=b?.id||Date.now().toString(36)+Math.random().toString(36).slice(2,7);
   $('fTitle').textContent=b?'Edit book':'Add a book';
   clearTimeout(searchT);searchCtl?.abort();$('q').value='';$('res').replaceChildren();
-  $('t').value=b?.title||'';$('a').value=b?.author||'';$('d').value=b?.finished||new Date().toISOString().slice(0,7);$('n').value=b?.note||'';
+  $('t').value=b?.title||'';$('a').value=b?.author||'';$('d').value=b?.finished||new Date().toISOString().slice(0,7);$('n').value=b?.note||'';$('pg').value=b?.pages||'';
   rating=b?.rating||0;pickCover=b?.cover||null;coverColor=b?.cover?b.color:null;coverAccent=b?.cover?b.accent||null:null;
   pickColor=b?.color||PAL[hash(formId)%PAL.length];pickAccent=b?.accent||null;
   $('man').open=false;$('del').hidden=!b;drawStars();drawSw();drawPick();
@@ -263,6 +314,8 @@ const BIBLE=[
  ['Old Testament','#4a1f1c','#c9a45c',['Genesis','Exodus','Leviticus','Numbers','Deuteronomy','Joshua','Judges','Ruth','1 Samuel','2 Samuel','1 Kings','2 Kings','1 Chronicles','2 Chronicles','Ezra','Nehemiah','Esther','Job','Psalms','Proverbs','Ecclesiastes','Song of Songs','Isaiah','Jeremiah','Lamentations','Ezekiel','Daniel','Hosea','Joel','Amos','Obadiah','Jonah','Micah','Nahum','Habakkuk','Zephaniah','Haggai','Zechariah','Malachi']],
  ['New Testament','#1f2a44','#c9a45c',['Matthew','Mark','Luke','John','Acts','Romans','1 Corinthians','2 Corinthians','Galatians','Ephesians','Philippians','Colossians','1 Thessalonians','2 Thessalonians','1 Timothy','2 Timothy','Titus','Philemon','Hebrews','James','1 Peter','2 Peter','1 John','2 John','3 John','Jude','Revelation']],
  ['Deuterocanon','#2f3d2a','#c9a45c',['Tobit','Judith','1 Maccabees','2 Maccabees','Wisdom','Sirach','Baruch']]];
+const BIBLE_CH={Genesis:50,Exodus:40,Leviticus:27,Numbers:36,Deuteronomy:34,Joshua:24,Judges:21,Ruth:4,'1 Samuel':31,'2 Samuel':24,'1 Kings':22,'2 Kings':25,'1 Chronicles':29,'2 Chronicles':36,Ezra:10,Nehemiah:13,Esther:10,Job:42,Psalms:150,Proverbs:31,Ecclesiastes:12,'Song of Songs':8,Isaiah:66,Jeremiah:52,Lamentations:5,Ezekiel:48,Daniel:12,Hosea:14,Joel:3,Amos:9,Obadiah:1,Jonah:4,Micah:7,Nahum:3,Habakkuk:3,Zephaniah:3,Haggai:2,Zechariah:14,Malachi:4,Matthew:28,Mark:16,Luke:24,John:21,Acts:28,Romans:16,'1 Corinthians':16,'2 Corinthians':13,Galatians:6,Ephesians:6,Philippians:4,Colossians:4,'1 Thessalonians':5,'2 Thessalonians':3,'1 Timothy':6,'2 Timothy':4,Titus:3,Philemon:1,Hebrews:13,James:5,'1 Peter':5,'2 Peter':3,'1 John':5,'2 John':1,'3 John':1,Jude:1,Revelation:22,Tobit:14,Judith:16,'1 Maccabees':16,'2 Maccabees':15,Wisdom:19,Sirach:51,Baruch:6};
+const biblePages=t=>t==='The Holy Bible'?1200:BIBLE_CH[t]?Math.max(1,Math.round(BIBLE_CH[t]*(t==='Psalms'?.55:1.4))):null;
 const BIBLE_ALIAS={'Psalms':['Psalm'],'Song of Songs':['Song of Solomon','Canticles'],'Ecclesiastes':['Qoheleth'],'Acts':['Acts of the Apostles'],'Revelation':['Revelations','Apocalypse'],'Sirach':['Ecclesiasticus'],'Wisdom':['Wisdom of Solomon']};
 const bnorm=v=>v.toLowerCase().trim().replace(/^(the\s+)?(holy\s+)?(gospel\s+(according\s+)?(to|of)|book\s+of(\s+the)?|letter\s+(to|of)(\s+the)?|epistle\s+(to|of)(\s+the)?|first\s+letter\s+of|second\s+letter\s+of)\s+/,'').replace(/^(third|iii)\s+/,'3').replace(/^(second|ii)\s+/,'2').replace(/^(first|i)\s+/,'1').replace(/[^a-z0-9]/g,'');
 const BIBLE_ALL=[{title:'The Holy Bible',sub:'The whole Bible',color:'#2b1a14',accent:'#c9a45c',keys:['bible','holybible','scripture']}].concat(BIBLE.flatMap(([part,color,accent,names])=>names.map(n=>({title:n,sub:'Bible · '+part,color,accent,keys:[n,...(BIBLE_ALIAS[n]||[])].map(bnorm)}))));
@@ -278,7 +331,7 @@ function hitBtn(h){
   if(h.cover_i){const im=document.createElement('img');im.loading='lazy';im.alt='';im.src=coverUrl(h.cover_i,'S');b.append(im)}
   else{const nc=document.createElement('div');nc.className='nocover';if(h.color){nc.style.background=`linear-gradient(${h.accent} 0 3px,transparent 3px calc(100% - 3px),${h.accent} 0),${h.color}`}b.append(nc)}
   const tx=document.createElement('div'),bt=document.createElement('b'),sp=document.createElement('span');
-  bt.textContent=h.title;sp.textContent=h.bible?h.sub:[h.au,h.first_publish_year].filter(Boolean).join(' · ');tx.append(bt,sp);b.append(tx);
+  bt.textContent=h.title;sp.textContent=h.bible?h.sub:[h.au,h.first_publish_year,h.number_of_pages_median&&h.number_of_pages_median+' pages'].filter(Boolean).join(' · ');tx.append(bt,sp);b.append(tx);
   b.onclick=()=>choose(h);return b;
 }
 let searchCtl=null,searchT=null,pickToken=0;
@@ -289,7 +342,7 @@ async function search(v){
   const res=$('res'),local=bibleHits(v),msg=document.createElement('p');
   res.replaceChildren(...local.map(hitBtn));msg.textContent='Searching…';res.append(msg);
   try{
-    const r=await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(v)}&fields=key,title,author_name,author_alternative_name,cover_i,first_publish_year&limit=15`,{signal:searchCtl.signal});
+    const r=await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(v)}&fields=key,title,author_name,author_alternative_name,cover_i,first_publish_year,number_of_pages_median&limit=15`,{signal:searchCtl.signal});
     if(!r.ok)throw new Error(r.status);
     const j=await r.json(),seen=new Set(),hits=[];
     for(const doc of j.docs||[]){const au=latinName(doc),k=(doc.title+'|'+au).toLowerCase();if(!doc.title||seen.has(k))continue;seen.add(k);hits.push({...doc,au});if(hits.length>=7)break}
@@ -300,7 +353,8 @@ async function search(v){
 }
 async function choose(h){
   const tok=++pickToken;clearTimeout(searchT);searchCtl?.abort();
-  if(h.bible){$('t').value=h.title;$('a').value='The Bible';$('q').value='';$('res').replaceChildren();pickCover=null;coverColor=h.color;coverAccent=h.accent;pickColor=h.color;pickAccent=h.accent;drawSw();drawPick();return}
+  if(h.bible){$('pg').value=biblePages(h.title)||'';$('t').value=h.title;$('a').value='The Bible';$('q').value='';$('res').replaceChildren();pickCover=null;coverColor=h.color;coverAccent=h.accent;pickColor=h.color;pickAccent=h.accent;drawSw();drawPick();return}
+  $('pg').value=h.number_of_pages_median||'';
   $('t').value=h.title.slice(0,120);$('a').value=(h.au||'').slice(0,80);$('q').value='';$('res').replaceChildren();
   pickCover=h.cover_i||null;coverColor=null;coverAccent=null;pickColor=PAL[hash(formId+h.title)%PAL.length];pickAccent=null;
   drawSw();drawPick();
@@ -321,15 +375,15 @@ function coverColors(id){return new Promise(done=>{
   }catch{done(null)}};
   im.onerror=()=>{clearTimeout(to);done(null)};im.src=coverUrl(id,'S');
 })}
-$('t').addEventListener('input',drawPick);$('a').addEventListener('input',drawPick);
+$('t').addEventListener('input',drawPick);$('pg').addEventListener('input',drawPick);$('a').addEventListener('input',drawPick);
 $('f').addEventListener('submit',e=>{
   e.preventDefault();
-  const body={title:$('t').value.trim(),author:$('a').value.trim(),finished:$('d').value||'',rating,color:pickColor,accent:pickAccent||null,cover:pickCover||null,note:$('n').value.trim(),addedAt:editing?.addedAt||Date.now()};
+  const body={title:$('t').value.trim(),author:$('a').value.trim(),finished:$('d').value||'',rating,color:pickColor,accent:pickAccent||null,cover:pickCover||null,pages:pagesVal(),note:$('n').value.trim(),addedAt:editing?.addedAt||Date.now()};
   if(!body.title){toast('Search for your book first, or type its title');$('man').open=true;$('t').focus();return}
   if(editing){Object.assign(books.find(b=>b.id===editing.id)||{},body)}else books.push({id:formId,...body});
   $('edit').close();toast(editing?'Saved':'Added to your shelf');after();
 });
-$('del').onclick=()=>{if(!editing)return;books=books.filter(b=>b.id!==editing.id);$('edit').close();toast('Removed');after()};
+$('del').onclick=()=>{if(!editing)return;$('edit').close();removeBook(editing.id)};
 $('cancel').onclick=()=>$('edit').close();$('vClose').onclick=()=>$('view').close();
 $('addBtn').onclick=()=>openEdit();$('sort').onchange=render;
 $('name').onclick=()=>{const n=$('name');n.contentEditable='true';n.focus();document.getSelection().selectAllChildren(n)};
@@ -339,38 +393,30 @@ $('name').addEventListener('blur',()=>{const n=$('name');if(n.contentEditable!==
 /* ---- wallpaper ---- */
 function paint(cv,W,H,withLabel){
   cv.width=W;cv.height=H;const x=cv.getContext('2d');
-  const g=x.createRadialGradient(W/2,0,0,W/2,0,Math.max(W,H));g.addColorStop(0,'#2b4246');g.addColorStop(1,'#141f21');x.fillStyle=g;x.fillRect(0,0,W,H);
+  const P=BGS[$('wpBg').value]||BGS.cream;
+  const g=x.createRadialGradient(W/2,H*.05,0,W/2,H*.05,Math.max(W,H)*1.05);g.addColorStop(0,P[0]);g.addColorStop(1,P[1]);x.fillStyle=g;x.fillRect(0,0,W,H);
+  x.fillStyle=x.createPattern(noise(),'repeat');x.globalAlpha=.35;x.fillRect(0,0,W,H);x.globalAlpha=1;
   const list=sorted(),mx=W*.08,top=H*(withLabel?.16:.1),avail=H*(withLabel?.76:.8),innerW=W-mx*2;
   let k=Math.min(W,H)/420,rows;
   for(;k>.2;k*=.94){rows=chunk(list,innerW-40*k,k);if(rows.length*(214*k+34*k)<=avail)break}
-  if(rows.length>1){const tw=list.reduce((t,b)=>t+dims(b).w*k+3*k,0)/rows.length;const n=rows.length;rows=Array.from({length:n},()=>[]);let cum=0;
-    for(const b of list){const w=dims(b).w*k+3*k;rows[Math.min(n-1,Math.floor((cum+w/2)/tw))].push(b);cum+=w}rows=rows.filter(r=>r.length)}
+  if(rows.length>1){const tw=list.reduce((t,b)=>t+dims(b).w*k+1*k,0)/rows.length;const n=rows.length;rows=Array.from({length:n},()=>[]);let cum=0;
+    for(const b of list){const w=dims(b).w*k+1*k;rows[Math.min(n-1,Math.floor((cum+w/2)/tw))].push(b);cum+=w}rows=rows.filter(r=>r.length)}
   const rh=214*k,gap=34*k,total=rows.length*(rh+gap),y0=top+(avail-total)/2;
   rows.forEach((r,ri)=>{
-    const y=y0+ri*(rh+gap),base=y+rh;let rowW=r.reduce((s,b)=>s+dims(b).w*k+3*k,0),cx=mx+20*k+(innerW-40*k-rowW)/2;
-    const pg=x.createLinearGradient(0,base,0,base+16*k);pg.addColorStop(0,'#a26a40');pg.addColorStop(.35,'#7b4b2a');pg.addColorStop(1,'#5a331b');
-    x.fillStyle='rgba(0,0,0,.35)';x.fillRect(mx-6*k,base+16*k,innerW+12*k,10*k);x.fillStyle=pg;x.fillRect(mx-14*k,base,innerW+28*k,16*k);
+    const y=y0+ri*(rh+gap),base=y+rh;let rowW=r.reduce((s,b)=>s+dims(b).w*k+1*k,0),cx=mx+20*k+(innerW-40*k-rowW)/2;
+    const pg=x.createLinearGradient(0,base,0,base+16*k);pg.addColorStop(0,'#f0dcbf');pg.addColorStop(.3,'#d8b78e');pg.addColorStop(1,'#b69068');
+    const sh=x.createLinearGradient(0,base+16*k,0,base+34*k);sh.addColorStop(0,'rgba(120,80,45,.22)');sh.addColorStop(1,'rgba(120,80,45,0)');x.fillStyle=sh;x.fillRect(mx-10*k,base+16*k,innerW+20*k,18*k);
+    x.fillStyle=pg;x.fillRect(mx-14*k,base,innerW+28*k,16*k);
     r.forEach(b=>{
-      const d=dims(b),w=d.w*k,h=d.h*(rh-14*k),c=colorOf(b),tc=textOn(c),art=spineArt(b,h,k);
-      x.fillStyle='rgba(0,0,0,.25)';x.fillRect(cx+2*k,base-h+2*k,w,h-2*k);
-      x.fillStyle=c;x.fillRect(cx,base-h,w,h);
-      x.fillStyle=b.accent||rgba(tc,.35);for(const band of art.bands)x.fillRect(cx,base-h+band.y,w,band.h);
-      x.fillStyle='rgba(255,255,255,.16)';x.fillRect(cx,base-h,3*k,h);x.fillStyle='rgba(0,0,0,.18)';x.fillRect(cx+w-4*k,base-h,4*k,h);
-      x.save();x.translate(cx+w/2,base-h);x.rotate(Math.PI/2);x.fillStyle=tc;x.textBaseline='middle';
-      const room=h-art.top-22*k;let au=b.author&&d.h>.8?b.author.split(' ').pop():'',aw=0;
-      if(au){x.font=`500 ${12*k}px "Barlow Condensed",sans-serif`;aw=x.measureText(au).width+14*k}
-      let fs=15,t=b.title||'Untitled';x.font=`600 ${fs*k}px "Barlow Condensed",sans-serif`;
-      if(aw&&x.measureText(t).width>room-aw){au='';aw=0}
-      while(fs>11&&x.measureText(t).width>room){fs-=.5;x.font=`600 ${fs*k}px "Barlow Condensed",sans-serif`}
-      while(t.length>1&&x.measureText(t).width>room-aw)t=t.slice(0,-2).trimEnd()+'…';
-      x.fillText(t,art.top,0);
-      if(au){x.font=`500 ${12*k}px "Barlow Condensed",sans-serif`;x.globalAlpha=.8;x.fillText(au,h-22*k-x.measureText(au).width,0)}
-      x.restore();cx+=w+3*k;
+      const d=dims(b),w=d.w*k,h=d.h*(rh-14*k);
+      x.fillStyle='rgba(110,70,40,.18)';x.fillRect(cx+2*k,base-h+3*k,w,h-3*k);
+      x.save();x.translate(cx,base-h);drawSpine(x,b,w,h,k);x.restore();cx+=w+1*k;
     });
   });
-  if(withLabel){x.fillStyle='#eef2ee';x.textAlign='center';x.font=`400 ${Math.min(W,H)*.045}px "Young Serif",serif`;x.fillText(shelfName,W/2,H*.09);
-    x.font=`500 ${Math.min(W,H)*.018}px Inter,sans-serif`;x.fillStyle='#a9bab6';x.fillText(`${books.length} book${books.length===1?'':'s'} read`,W/2,H*.09+Math.min(W,H)*.04)}
+  if(withLabel){x.fillStyle=P[2];x.textAlign='center';x.font=`400 ${Math.min(W,H)*.045}px "Young Serif",serif`;x.fillText(shelfName,W/2,H*.09);
+    x.font=`500 ${Math.min(W,H)*.018}px Inter,sans-serif`;x.fillStyle=P[3];x.fillText(`${books.length} book${books.length===1?'':'s'} read`,W/2,H*.09+Math.min(W,H)*.04)}
 }
+const BGS={cream:['#fffaf3','#f1e4d3','#4a3a30','#9a8574'],blush:['#fff6f3','#f4dcd6','#5a3a3a','#a8817c'],peach:['#fff7ef','#f7dcc6','#5b3b2a','#aa8268'],sage:['#f8faf3','#dfe7d6','#3d4a3a','#7f8f79'],sky:['#f7fafd','#dbe6ef','#34465a','#7a8ea3'],lavender:['#fbf8fd','#e6def0','#463a5a','#8d80a3']};
 let wpBlob=null,wpURL=null,wpName='';
 const size=()=>$('wpSize').value.split('x').map(Number);
 async function prepare(){
@@ -384,10 +430,10 @@ async function prepare(){
 $('wpBtn').onclick=async()=>{
   if(!books.length){toast('Add a book first');return}
   $('wp').showModal();$('prevImg').removeAttribute('src');
-  try{await Promise.all(['600 20px "Barlow Condensed"','500 20px "Barlow Condensed"','400 20px "Young Serif"','500 20px Inter'].map(f=>document.fonts.load(f)))}catch{}
+  try{await Promise.all(FONT_LOADS.map(f=>document.fonts.load(f)))}catch{}
   prepare();
 };
-$('wpSize').onchange=prepare;$('wpLabel').onchange=prepare;$('wpClose').onclick=()=>$('wp').close();
+$('wpSize').onchange=prepare;$('wpBg').onchange=()=>{wpBg=$('wpBg').value;save();prepare()};$('wpLabel').onchange=prepare;$('wpClose').onclick=()=>$('wp').close();
 $('wpSave').onclick=()=>{
   if(!wpBlob)return;
   const file=new File([wpBlob],wpName,{type:'image/png'});
@@ -420,6 +466,7 @@ function standaloneMain(){
   }
   $('vClose').onclick=()=>$('view').close();
   let t;addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(render,80)});render();
+  Promise.all(FONT_LOADS.map(f=>document.fonts.load(f).catch(()=>{}))).then(render);
 }
 const escH=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 function buildPage(){
@@ -435,8 +482,8 @@ function buildPage(){
     '<dialog id="view"><div class="det"><div class="vhead"><div><h2 id="vT"></h2><p class="meta" id="vA"></p></div><img id="vC" alt="" hidden></div><p class="meta" id="vM"></p><p id="vN" style="margin:0"></p>',
     '<div class="foot"><button class="btn pri" type="button" id="vClose">Close</button></div></div></dialog>',
     '<'+S+'>{const B='+data+';const PAL='+JSON.stringify(PAL)+';',
-    'const hash='+hash+';const colorOf='+colorOf+';const lum='+lum+';const textOn='+textOn+';const rgba='+rgba+';const dims='+dims+';',
-    spineArt.toString()+spineEl.toString()+chunk.toString()+'('+standaloneMain+')()}</'+S+'>',
+    'const hash='+hash+';const colorOf='+colorOf+';const lum='+lum+';const textOn='+textOn+';const rgba='+rgba+';const dims='+dims+';const FONTS='+JSON.stringify(FONTS)+';const FONT_LOADS='+JSON.stringify(FONT_LOADS)+';',
+    [noise,fit,vtext,drawSpine,finish,spineEl,chunk].map(f=>f.toString()).join('\n')+'('+standaloneMain+')()}</'+S+'>',
     '</body></html>'].join('\n');
 }
 $('pgBtn').onclick=()=>{download(buildPage(),`${fileBase()}.html`,'text/html');toast('Saved — send the file to anyone')};
@@ -446,12 +493,14 @@ $('bkBtn').onclick=()=>{download(JSON.stringify({name:shelfName,books},null,1),`
 $('rsBtn').onclick=()=>$('rsFile').click();
 const hexOk=v=>/^#[0-9a-f]{6}$/i.test(v)?v:null;
 $('rsFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const j=JSON.parse(await f.text());if(!Array.isArray(j.books))throw 0;
-  books=j.books.filter(b=>b&&typeof b.title==='string').map(b=>({id:String(b.id||Math.random().toString(36).slice(2)).slice(0,40),title:b.title.slice(0,120),author:String(b.author||'').slice(0,80),finished:/^\d{4}-\d{2}$/.test(b.finished)?b.finished:'',rating:Math.max(0,Math.min(5,b.rating|0)),color:hexOk(b.color),accent:hexOk(b.accent),cover:Number.isInteger(b.cover)?b.cover:null,note:String(b.note||'').slice(0,400),addedAt:+b.addedAt||0}));
+  books=j.books.filter(b=>b&&typeof b.title==='string').map(b=>({id:String(b.id||Math.random().toString(36).slice(2)).slice(0,40),title:b.title.slice(0,120),author:String(b.author||'').slice(0,80),finished:/^\d{4}-\d{2}$/.test(b.finished)?b.finished:'',rating:Math.max(0,Math.min(5,b.rating|0)),color:hexOk(b.color),accent:hexOk(b.accent),cover:Number.isInteger(b.cover)?b.cover:null,pages:Number.isInteger(b.pages)&&b.pages>0&&b.pages<=5000?b.pages:null,note:String(b.note||'').slice(0,400),addedAt:+b.addedAt||0}));
   if(typeof j.name==='string'&&j.name.trim())shelfName=j.name.trim().slice(0,60);toast(`Restored ${books.length} books`);after()}catch{toast('That file isn’t a bookshelf backup')}e.target.value=''};
 
 new ResizeObserver(()=>{clearTimeout(render.t);render.t=setTimeout(render,80)}).observe($('shelf'));
-try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j){books=Array.isArray(j.books)?j.books:[];if(j.name)shelfName=j.name}}catch{}
+try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j){books=Array.isArray(j.books)?j.books:[];if(j.name)shelfName=j.name;if(j.bg){wpBg=j.bg;$('wpBg').value=j.bg}}}catch{}
 after();
+backfill();
+Promise.all(FONT_LOADS.map(f=>document.fonts.load(f).catch(()=>{}))).then(render);
 }
 </script>
 </body>
