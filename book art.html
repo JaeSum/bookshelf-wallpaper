@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Bookshelf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Barlow+Condensed:wght@500;600&family=Inter:wght@400;500;600&family=Oswald:wght@500&family=Playfair+Display:ital,wght@0,700;1,700&family=Libre+Baskerville:wght@700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+/* VOICE: warm, personal, a little proud — a reading wall you show friends.
+   IDEA: a real walnut bookshelf mounted on a painted wall; each book read is a spine.
+   PICTURE: the shelf itself, rows of spines on planks with bookends, filling the first screen.
+   COLOUR and TYPE: deep slate-teal wall (pale sage by day), walnut planks, spines coloured from each book's cover, coral accent; Young Serif, Barlow Condensed, Inter.
+   LAYOUT: title row with count and actions, then the shelf full width; search-first add dialog. */
+:root{color-scheme:light dark;
+--wall:light-dark(#cfdad6,#203236);--wall2:light-dark(#bfcdc8,#18272a);
+--ink:light-dark(#1d2a2c,#eef2ee);--soft:light-dark(#4b5d5f,#a9bab6);
+--wood:#7b4b2a;--wood2:#5a331b;--woodlite:#a26a40;
+--panel:light-dark(#ffffff,#16201f);--line:light-dark(#d6dfdc,#2f4245);--hover:light-dark(#eef3f1,#1f2c2b);
+--accent:light-dark(#c4472f,#ff8a6b)}
+*{box-sizing:border-box;min-width:0}
+[hidden]{display:none!important}
+body{margin:0;background:radial-gradient(120% 80% at 50% 0%,var(--wall),var(--wall2));color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;overflow-x:clip;min-height:100vh}
+.band{padding:clamp(20px,3.5vw,48px) max(4vw,16px);max-width:1240px;margin:0 auto}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 20px;justify-content:space-between}
+h1{font:400 clamp(32px,5vw,48px)/1.05 "Young Serif",Georgia,serif;margin:0;text-wrap:balance}
+h1 button{all:unset;cursor:pointer}h1 button:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+.sub{color:var(--soft);margin:6px 0 0}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
+.btn{font:600 15px Inter,sans-serif;min-height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:disabled{opacity:.5;cursor:wait}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.spine:focus-visible,.hit:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:18px;color:var(--soft);font-size:14px}
+select,input,textarea{font:16px Inter,sans-serif;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:10px;min-height:44px;padding:8px 12px;width:100%}
+.tools select{width:auto}
+#shelf{margin-top:22px;padding:18px 14px 6px;background:linear-gradient(var(--wood2),var(--wood2)) left/14px 100% no-repeat,linear-gradient(var(--wood2),var(--wood2)) right/14px 100% no-repeat,rgba(0,0,0,.14);border-radius:6px;box-shadow:inset 0 10px 30px rgba(0,0,0,.25)}
+.row{position:relative;display:flex;align-items:flex-end;gap:3px;height:214px;padding:0 18px;margin-bottom:22px}
+.row::after{content:"";position:absolute;left:-14px;right:-14px;bottom:-16px;height:16px;background:linear-gradient(var(--woodlite),var(--wood) 35%,var(--wood2));border-radius:2px;box-shadow:0 8px 14px rgba(0,0,0,.3)}
+.row{gap:1px}
+.spine{position:relative;flex:none;border:0;padding:0;cursor:pointer;border-radius:1px 1px 0 0;display:block;background:none;box-shadow:1px 0 2px rgba(0,0,0,.35);transition:transform .2s}
+.spine canvas{display:block;width:100%;height:100%;border-radius:inherit}
+.spine:hover{transform:translateY(-8px)}
+.end{flex:none;width:22px;height:120px;border-radius:4px 4px 0 0;background:linear-gradient(90deg,#3a3f44,#6b737a 45%,#2b2f33)}
+.lean{transform-origin:bottom left;transform:rotate(9deg);margin-left:10px}.lean:hover{transform:rotate(9deg) translateY(-6px)}
+.empty{height:214px;display:grid;place-items:center;color:#f1e6d8;text-align:center;font-size:15px;padding:0 20px}
+.note{font-size:13px;color:var(--soft);margin-top:14px}
+dialog{border:0;border-radius:16px;padding:0;width:min(480px,94vw);max-height:92vh;overflow:auto;background:var(--panel);color:var(--ink);box-shadow:0 30px 80px rgba(0,0,0,.45)}
+dialog::backdrop{background:rgba(10,20,20,.55)}
+form,.det{padding:22px;display:grid;gap:12px}
+dialog h2{font:400 26px/1.1 "Young Serif",serif;margin:0}
+label{font-size:14px;font-weight:500;display:grid;gap:4px}
+.lbl{font-size:14px;font-weight:500}
+.res{display:grid;gap:2px;max-height:300px;overflow:auto}
+.res:empty{display:none}
+.res p{margin:4px 0;font-size:14px;color:var(--soft)}
+.hit{display:grid;grid-template-columns:40px minmax(0,1fr);gap:12px;align-items:center;text-align:left;border:0;background:none;color:var(--ink);padding:6px;border-radius:10px;cursor:pointer;font:15px/1.3 Inter,sans-serif;min-height:60px}
+.hit:hover{background:var(--hover)}
+.hit img,.hit .nocover{width:40px;height:58px;object-fit:cover;border-radius:3px;background:var(--line)}
+.hit b{display:block;font-weight:600}.hit span{color:var(--soft);font-size:13px}
+.pick{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:14px;align-items:end;padding:12px;border-radius:12px;background:var(--hover)}
+.pick img{width:64px;height:96px;object-fit:cover;border-radius:4px;box-shadow:0 4px 10px rgba(0,0,0,.25)}
+.pick strong{display:block;font:400 19px/1.2 "Young Serif",serif}.pick span{color:var(--soft);font-size:14px}
+.pick .spine{cursor:default}.pick .spine:hover{transform:none}
+details summary{cursor:pointer;font-size:14px;color:var(--soft);min-height:32px;display:flex;align-items:center}
+details[open]{display:grid;gap:10px}
+.sw{display:flex;flex-wrap:wrap;gap:6px}
+.sw button{width:34px;height:34px;border-radius:50%;border:2px solid transparent;cursor:pointer}
+.sw button[aria-pressed=true]{border-color:var(--ink);box-shadow:0 0 0 2px var(--panel) inset}
+.stars{display:flex;gap:2px}.stars button{all:unset;cursor:pointer;font-size:26px;width:36px;height:40px;text-align:center;color:var(--line)}.stars button.on{color:#e9a93b}
+.stars button:focus-visible{outline:2px solid var(--accent)}
+.foot{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;margin-top:4px}
+.foot .del{margin-right:auto;color:var(--accent)}
+.meta{color:var(--soft);margin:0}
+.vhead{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:start}
+.vhead img{width:84px;border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+#prevImg{width:100%;max-height:46vh;object-fit:contain;border-radius:8px;background:#141f21;display:block;min-height:120px}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9;max-width:92vw;text-align:center;display:flex;gap:14px;align-items:center}
+.toast.on{opacity:1;pointer-events:auto}
+.toast button{all:unset;cursor:pointer;font-weight:600;color:var(--accent);padding:4px 2px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+@media(max-width:600px){.row{height:184px;padding:0 8px}.spine{font-size:13px}.grid2{grid-template-columns:minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){.spine{transition:none}}
+</style>
+</head>
+<body>
+<main class="band">
+  <header>
+    <div>
+      <h1><button id="name" type="button" aria-label="Shelf name — tap to rename">My Bookshelf</button></h1>
+      <p class="sub" id="count"></p>
+    </div>
+    <div class="acts">
+      <button class="btn" id="addBtn" type="button">Add a book</button>
+      <button class="btn pri" id="wpBtn" type="button">Make wallpaper</button>
+    </div>
+  </header>
+  <div class="tools">
+    <label style="display:flex;gap:8px;align-items:center;font-weight:400">Arrange by
+      <select id="sort"><option value="added">Order read</option><option value="colour">Colour (rainbow)</option><option value="author">Author</option><option value="title">Title</option><option value="rating">Rating</option></select>
+    </label>
+  </div>
+  <section id="shelf" aria-label="Bookshelf"></section>
+  <p class="note" id="note"></p>
+  <div class="tools" style="margin-top:6px">
+    <span>Your books are saved in this browser only.</span>
+    <button class="btn" id="bkBtn" type="button">Back up books</button>
+    <button class="btn" id="rsBtn" type="button">Restore backup</button>
+    <button class="btn" id="pgBtn" type="button" hidden>Download shareable page</button>
+    <input type="file" id="rsFile" accept=".json,application/json" hidden>
+  </div>
+  <p class="note">Book search and covers from <a href="https://openlibrary.org" style="color:inherit">Open Library</a>.</p>
+</main>
+
+<dialog id="edit"><form id="f" novalidate>
+  <h2 id="fTitle">Add a book</h2>
+  <label>Find your book<input id="q" type="search" placeholder="Start typing a title or author…" autocomplete="off" enterkeyhint="search"></label>
+  <div class="res" id="res" aria-live="polite"></div>
+  <div class="pick" id="pick" hidden>
+    <div id="pv" aria-hidden="true"></div>
+    <img id="pc" alt="" hidden>
+    <div><strong id="pT"></strong><span id="pA"></span></div>
+  </div>
+  <details id="man"><summary>Can’t find it? Type it in or change the spine colour</summary>
+    <label>Title<input id="t" maxlength="120" autocomplete="off"></label>
+    <label>Author<input id="a" maxlength="80" autocomplete="off"></label>
+    <div><span class="lbl">Spine colour</span><div class="sw" id="sw"></div></div>
+  </details>
+  <div class="grid2">
+    <label>Finished<input id="d" type="month"></label>
+    <div><span class="lbl">Rating</span><div class="stars" id="stars"></div></div>
+  </div>
+  <label>Note<textarea id="n" rows="2" maxlength="400" placeholder="What did you think?"></textarea></label>
+  <div class="foot"><button class="btn del" type="button" id="del" hidden>Remove</button><button class="btn" type="button" id="cancel">Cancel</button><button class="btn pri" type="submit">Save</button></div>
+</form></dialog>
+
+<dialog id="view"><div class="det">
+  <div class="vhead"><div><h2 id="vT"></h2><p class="meta" id="vA"></p></div><img id="vC" alt="" hidden></div>
+  <p class="meta" id="vM"></p><p id="vN" style="margin:0"></p>
+  <div class="foot"><button class="btn del" type="button" id="vDel">Remove</button><button class="btn" type="button" id="vEdit">Edit</button><button class="btn pri" type="button" id="vClose">Close</button></div>
+</div></dialog>
+
+<dialog id="wp"><div class="det">
+  <h2>Make wallpaper</h2>
+  <label>Size<select id="wpSize">
+    <option value="1179x2556">Phone · 1179 × 2556</option><option value="2560x1440">Desktop · 2560 × 1440</option><option value="1920x1080">Desktop · 1920 × 1080</option>
+    <option value="3840x2160">4K · 3840 × 2160</option><option value="2048x2732">Tablet · 2048 × 2732</option>
+  </select></label>
+  <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="wpLabel" checked style="width:20px;min-height:20px"> Show shelf name and count</label>
+  <img id="prevImg" alt="Wallpaper preview">
+  <p class="meta" style="font-size:14px" id="wpHint">If nothing downloads, press and hold the picture (phone) or right-click it (computer) and choose “Save image”.</p>
+  <div class="foot"><button class="btn" type="button" id="wpClose">Close</button><button class="btn pri" type="button" id="wpSave" disabled>Save wallpaper</button></div>
+</div></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+{
+const $=id=>document.getElementById(id);
+const KEY='bookshelf-wallpaper-maker.v1';
+const PAL=['#b23a48','#e07a5f','#f2cc8f','#e9c46a','#81b29a','#2a9d8f','#3d5a80','#264653','#5e548e','#9c6644','#d4a373','#efe6d2','#1f1f24','#c9184a'];
+let books=[],shelfName='My Bookshelf',editing=null,formId='',pickColor=null,pickAccent=null,coverColor=null,coverAccent=null,pickCover=null,rating=0;
+const hash=s=>{let h=7;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h};
+const colorOf=b=>b.color||PAL[hash(b.id)%PAL.length];
+const lum=hex=>{const n=parseInt(hex.slice(1),16),r=n>>16,g=n>>8&255,b=n&255;return (r*299+g*587+b*114)/1000};
+const textOn=hex=>lum(hex)>150?'#1d1d1f':'#f7f2ea';
+const rgba=(hex,a)=>{const n=parseInt(hex.slice(1),16);return `rgba(${n>>16},${n>>8&255},${n&255},${a})`};
+const dims=b=>{const h=hash(b.id+'x');return {w:24+Math.min(22,(b.title||'').length*.6)+h%11,h:.66+(h%34)/100}};
+const coverUrl=(id,s)=>`https://covers.openlibrary.org/b/id/${id}-${s}.jpg`;
+const FONTS=[{f:'"Barlow Condensed"',w:600,up:0},{f:'Oswald',w:500,up:1},{f:'"Playfair Display"',w:700,up:0},{f:'"Libre Baskerville"',w:700,up:1},{f:'"Bebas Neue"',w:400,up:1},{f:'Inter',w:600,up:0}];
+const FONT_LOADS=['600 20px "Barlow Condensed"','500 20px "Barlow Condensed"','500 20px Oswald','700 20px "Playfair Display"','italic 700 20px "Playfair Display"','700 20px "Libre Baskerville"','400 20px "Bebas Neue"','600 20px Inter','500 20px Inter','400 20px "Young Serif"'];
+function noise(){if(noise.c)return noise.c;const c=document.createElement('canvas');c.width=c.height=96;const x=c.getContext('2d'),im=x.createImageData(96,96);for(let i=0;i<im.data.length;i+=4){const v=Math.random()*255;im.data[i]=im.data[i+1]=im.data[i+2]=v;im.data[i+3]=26}x.putImageData(im,0,0);return noise.c=c}
+function fit(x,txt,F,ital,size,min,maxLen){let s=size;const set=()=>{x.font=(ital?'italic ':'')+F.w+' '+s+'px '+F.f};set();while(s>min&&x.measureText(txt).width>maxLen){s-=.5;set()}let t=txt;while(t.length>1&&x.measureText(t).width>maxLen)t=t.slice(0,-2).trimEnd()+'…';return {t,s,tw:x.measureText(t).width}}
+function vtext(x,t,cx,y0,len,align){x.save();x.translate(cx,y0);x.rotate(Math.PI/2);x.textBaseline='middle';const tw=x.measureText(t).width;x.fillText(t,align==='center'?(len-tw)/2:align==='end'?len-tw:0,0);x.restore()}
+function drawSpine(x,b,w,h,k){
+  const c=colorOf(b),bible=b.author==='The Bible',ac=b.accent||null,hv=hash(b.id+'v');
+  const v=bible?0:hv%5,F=bible?FONTS[3]:v===4?{f:'"Playfair Display"',w:700,up:0}:FONTS[hash(b.id+'f')%FONTS.length];
+  const band=ac||rgba(textOn(c),.35);let tc=bible&&ac?ac:textOn(c);
+  x.fillStyle=c;x.fillRect(0,0,w,h);
+  let top=18*k,bot=h-18*k,auPos='end',emblem=false,ital=v===4,ttc=tc;
+  if(v===0){x.fillStyle=band;x.fillRect(0,11*k,w,2.5*k);x.fillRect(0,h-13.5*k,w,2.5*k);top=22*k;bot=h-22*k}
+  else if(v===1){const L=lum(c)>140?'#2b2623':'#f2ecdf',ly=Math.round(h*.11),ttl=F.up?(b.title||'Untitled').toUpperCase():(b.title||'Untitled');
+    const tt=fit(x,ttl,F,false,Math.min(13*k,(w-14*k)*.62),7*k,h*.74-14*k),lh=Math.max(h*.36,Math.min(h*.74,tt.tw+16*k));
+    x.fillStyle=L;x.fillRect(3*k,ly,w-6*k,lh);x.strokeStyle=rgba(textOn(L),.35);x.lineWidth=.8*k;x.strokeRect(5.5*k,ly+2.5*k,w-11*k,lh-5*k);
+    x.font=F.w+' '+tt.s+'px '+F.f;x.fillStyle=textOn(L);vtext(x,tt.t,w/2,ly+7*k,lh-14*k,'center');
+    top=ly+lh+8*k;bot=h-14*k;
+    if(b.author&&bot-top>20*k){const au=b.author.split(' ').pop(),a=fit(x,F.up?au.toUpperCase():au,F,false,Math.min(10*k,(w-8*k)*.5),7*k,bot-top);if(!a.t.endsWith('…')){x.fillStyle=tc;x.globalAlpha=.85;vtext(x,a.t,w/2,top,bot-top,'center');x.globalAlpha=1}}
+    finish(x,w,h,k);return}
+  else if(v===2){const bh=Math.round(h*.12);x.fillStyle=band;x.fillRect(0,0,w,bh);x.fillRect(0,bh+3*k,w,1.2*k);top=bh+12*k;bot=h-24*k;emblem=true}
+  else if(v===3){auPos='start';top=14*k;bot=h-24*k;emblem=true}
+  else{x.fillStyle=band;for(const y of [9,13])x.fillRect(0,y*k,w,1.2*k);for(const y of [10.2,14.2])x.fillRect(0,h-y*k,w,1.2*k);top=22*k;bot=h-22*k}
+  if(emblem){x.fillStyle=rgba(tc.startsWith('#')?tc:'#ffffff',.75);const ey=h-12*k;if(hv%2){x.beginPath();x.arc(w/2,ey,3.2*k,0,7);x.fill()}else x.fillRect(w/2-3*k,ey-3*k,6*k,6*k)}
+  let title=b.title||'Untitled';if(F.up)title=title.toUpperCase();
+  const len=bot-top,big=F.f.includes('Bebas')?1.2:1;
+  let au=b.author?b.author.split(' ').pop():'';if(F.up)au=au.toUpperCase();
+  let aFit=null,gap=8*k;
+  if(au){aFit=fit(x,au,F,ital,Math.min(10*k,(w-8*k)*.5)*big,7*k,len*.34);if(aFit.t!==au)aFit=null}
+  let tFit=fit(x,title,F,ital,Math.min(15*k*big,(w-8*k)*.62),9*k,len-(aFit?aFit.tw+gap:0));
+  if(aFit&&tFit.t!==title){aFit=null;tFit=fit(x,title,F,ital,Math.min(15*k*big,(w-8*k)*.62),9*k,len)}
+  x.fillStyle=ttc;
+  if(aFit){
+    const af=(ital?'italic ':'')+F.w+' '+aFit.s+'px '+F.f;
+    if(auPos==='start'){x.font=af;x.globalAlpha=.85;vtext(x,aFit.t,w/2,top,aFit.tw,'start');x.globalAlpha=1;x.font=(ital?'italic ':'')+F.w+' '+tFit.s+'px '+F.f;vtext(x,tFit.t,w/2,top+aFit.tw+gap,len-aFit.tw-gap,'center')}
+    else{x.font=(ital?'italic ':'')+F.w+' '+tFit.s+'px '+F.f;vtext(x,tFit.t,w/2,top,len-aFit.tw-gap,'center');x.font=af;x.globalAlpha=.85;vtext(x,aFit.t,w/2,bot-aFit.tw,aFit.tw,'start');x.globalAlpha=1}
+  }else vtext(x,tFit.t,w/2,top,len,'center');
+  finish(x,w,h,k);
+}
+function finish(x,w,h,k){
+  x.globalAlpha=1;x.fillStyle=x.createPattern(noise(),'repeat');x.fillRect(0,0,w,h);
+  const g=x.createLinearGradient(0,0,w,0);g.addColorStop(0,'rgba(0,0,0,.40)');g.addColorStop(.1,'rgba(255,255,255,.08)');g.addColorStop(.28,'rgba(255,255,255,.17)');g.addColorStop(.5,'rgba(255,255,255,0)');g.addColorStop(.86,'rgba(0,0,0,.14)');g.addColorStop(1,'rgba(0,0,0,.45)');
+  x.fillStyle=g;x.fillRect(0,0,w,h);x.fillStyle='rgba(255,255,255,.14)';x.fillRect(0,0,w,Math.max(1,k));
+  const bg=x.createLinearGradient(0,h-8*k,0,h);bg.addColorStop(0,'rgba(0,0,0,0)');bg.addColorStop(1,'rgba(0,0,0,.22)');x.fillStyle=bg;x.fillRect(0,h-8*k,w,8*k);
+}
+function spineEl(b,scale,rh){
+  const d=dims(b),W=Math.round(d.w*scale),H=Math.round(d.h*(rh-14));
+  const el=document.createElement('button');el.type='button';el.className='spine';el.style.width=W+'px';el.style.height=H+'px';
+  const cv=document.createElement('canvas'),r=Math.min(3,window.devicePixelRatio||1);cv.width=Math.round(W*r);cv.height=Math.round(H*r);
+  const x=cv.getContext('2d');x.scale(r,r);drawSpine(x,b,W,H,scale);el.append(cv);
+  el.setAttribute('aria-label',(b.title||'Untitled')+(b.author?' by '+b.author:''));
+  return el;
+}
+function chunk(list,width,scale){
+  const rows=[[]];let used=0;
+  for(const b of list){const w=dims(b).w*scale+1;if(used+w>width-30*scale&&rows.at(-1).length){rows.push([]);used=0}rows.at(-1).push(b);used+=w}
+  return rows;
+}
+const toast=(m,label,fn)=>{const t=$('toast'),sp=document.createElement('span');sp.textContent=m;t.replaceChildren(sp);if(label){const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=()=>{t.classList.remove('on');fn()};t.append(b)}t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),label?6000:3200)};
+function removeBook(id){const i=books.findIndex(b=>b.id===id);if(i<0)return;const [gone]=books.splice(i,1);after();toast(`Removed “${gone.title}”`,'Undo',()=>{books.splice(Math.min(i,books.length),0,gone);after();toast('Put back on the shelf')})}
+const hue=hex=>{const n=parseInt(hex.slice(1),16);let r=(n>>16)/255,g=(n>>8&255)/255,b=(n&255)/255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;if(d<.08)return 400+(1-mx)*50;let h=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;return (h*60+360)%360};
+const fileBase=()=>shelfName.replace(/[^\w\- ]+/g,'').trim()||'bookshelf';
+function download(data,name,type){const blob=data instanceof Blob?data:new Blob([data],{type});const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),10000)}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({name:shelfName,books}))}catch{$('note').textContent='This browser isn’t saving your books. Use “Back up books” before closing the page.'}}
+function after(){$('pgBtn').hidden=!books.length;save();render()}
+
+function sorted(){
+  const s=$('sort').value,a=[...books];
+  if(s==='colour')a.sort((x,y)=>hue(colorOf(x))-hue(colorOf(y)));
+  else if(s==='author')a.sort((x,y)=>(x.author||'').localeCompare(y.author||''));
+  else if(s==='title')a.sort((x,y)=>(x.title||'').localeCompare(y.title||''));
+  else if(s==='rating')a.sort((x,y)=>(y.rating||0)-(x.rating||0));
+  else a.sort((x,y)=>(x.finished||'9999').localeCompare(y.finished||'9999')||(x.addedAt||0)-(y.addedAt||0));
+  return a;
+}
+function render(){
+  const shelf=$('shelf');shelf.replaceChildren();
+  $('name').textContent=shelfName;document.title=shelfName;
+  $('count').textContent=books.length?`${books.length} book${books.length>1?'s':''} read · tap a spine to edit`:'Your shelf is empty — add the first book you’ve read.';
+  if(!books.length){const e=document.createElement('div');e.className='row';const m=document.createElement('div');m.className='empty';m.style.flex='1';m.textContent='Press “Add a book” and search for a title to place your first spine here.';e.append(m);shelf.append(e);return}
+  const small=innerWidth<600,scale=small?.86:1,rh=small?184:214;
+  const rows=chunk(sorted(),shelf.clientWidth-(small?16:36),scale);
+  rows.forEach((r,ri)=>{
+    const row=document.createElement('div');row.className='row';
+    r.forEach((b,i)=>{const el=spineEl(b,scale,rh);if(ri===rows.length-1&&i===r.length-1&&r.length>2)el.classList.add('lean');el.onclick=()=>showBook(b);row.append(el)});
+    if(ri===rows.length-1){const e=document.createElement('div');e.className='end';e.style.marginLeft='auto';row.append(e)}
+    shelf.append(row);
+  });
+}
+function fillView(b){
+  $('vT').textContent=b.title||'Untitled';$('vA').textContent=b.author?`by ${b.author}`:'';
+  const when=b.finished?new Date(b.finished+'-01').toLocaleDateString(undefined,{month:'long',year:'numeric'}):'';
+  $('vM').textContent=[when&&`Finished ${when}`,b.rating?'★'.repeat(b.rating)+'☆'.repeat(5-b.rating):''].filter(Boolean).join(' · ');
+  $('vN').textContent=b.note||'';
+  const im=$('vC');if(b.cover){im.src=coverUrl(b.cover,'M');im.hidden=false;im.onerror=()=>{im.hidden=true}}else im.hidden=true;
+}
+function showBook(b){fillView(b);$('vEdit').onclick=()=>{$('view').close();openEdit(b)};$('vDel').onclick=()=>{$('view').close();removeBook(b.id)};$('view').showModal()}
+
+/* ---- add / edit with search ---- */
+function drawStars(){const s=$('stars');s.replaceChildren();for(let i=1;i<=5;i++){const b=document.createElement('button');b.type='button';b.textContent='★';b.className=i<=rating?'on':'';b.setAttribute('aria-label',`${i} star${i>1?'s':''}`);b.onclick=()=>{rating=rating===i?0:i;drawStars()};s.append(b)}}
+function drawSw(){
+  const s=$('sw');s.replaceChildren();
+  const opts=(coverColor?[[coverColor,coverAccent,'Suggested colour']]:[]).concat(PAL.map(c=>[c,null,'Colour '+c]));
+  opts.forEach(([c,ac,label],i)=>{const b=document.createElement('button');b.type='button';b.style.background=ac?`linear-gradient(${ac} 0 30%,${c} 30%)`:c;b.title=label;b.setAttribute('aria-label',label);b.setAttribute('aria-pressed',String(pickColor===c&&(pickAccent||null)===(ac||null)));b.onclick=()=>{pickColor=c;pickAccent=ac;drawSw();drawPick()};s.append(b)});
+}
+function draft(){return {id:formId,title:$('t').value.trim(),author:$('a').value.trim(),color:pickColor,accent:pickAccent}}
+function drawPick(){
+  const d=draft();$('pick').hidden=!d.title;if(!d.title)return;
+  $('pT').textContent=d.title;$('pA').textContent=d.author;
+  const pv=$('pv');pv.replaceChildren(spineEl(d,.62,214));pv.firstChild.tabIndex=-1;
+  const im=$('pc');if(pickCover){im.src=coverUrl(pickCover,'M');im.hidden=false;im.onerror=()=>{im.hidden=true}}else im.hidden=true;
+}
+function openEdit(b){
+  editing=b||null;formId=b?.id||Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+  $('fTitle').textContent=b?'Edit book':'Add a book';
+  clearTimeout(searchT);searchCtl?.abort();$('q').value='';$('res').replaceChildren();
+  $('t').value=b?.title||'';$('a').value=b?.author||'';$('d').value=b?.finished||new Date().toISOString().slice(0,7);$('n').value=b?.note||'';
+  rating=b?.rating||0;pickCover=b?.cover||null;coverColor=b?.cover?b.color:null;coverAccent=b?.cover?b.accent||null:null;
+  pickColor=b?.color||PAL[hash(formId)%PAL.length];pickAccent=b?.accent||null;
+  $('man').open=false;$('del').hidden=!b;drawStars();drawSw();drawPick();
+  $('edit').showModal();if(!b)$('q').focus();
+}
+function latinName(doc){
+  const all=[...(doc.author_name||[]).slice(0,1),...(doc.author_alternative_name||[])];
+  const latin=all.filter(n=>/^[A-Za-z\u00c0-\u024f][A-Za-z\u00c0-\u024f.'’\- ]*$/.test(n));
+  const nice=latin.find(n=>n.includes(' ')&&!n.split(/[ .]/).some(w=>w.length>2&&w===w.toUpperCase()));
+  return nice||latin[0]||all[0]||'';
+}
+const BIBLE=[
+ ['Old Testament','#4a1f1c','#c9a45c',['Genesis','Exodus','Leviticus','Numbers','Deuteronomy','Joshua','Judges','Ruth','1 Samuel','2 Samuel','1 Kings','2 Kings','1 Chronicles','2 Chronicles','Ezra','Nehemiah','Esther','Job','Psalms','Proverbs','Ecclesiastes','Song of Songs','Isaiah','Jeremiah','Lamentations','Ezekiel','Daniel','Hosea','Joel','Amos','Obadiah','Jonah','Micah','Nahum','Habakkuk','Zephaniah','Haggai','Zechariah','Malachi']],
+ ['New Testament','#1f2a44','#c9a45c',['Matthew','Mark','Luke','John','Acts','Romans','1 Corinthians','2 Corinthians','Galatians','Ephesians','Philippians','Colossians','1 Thessalonians','2 Thessalonians','1 Timothy','2 Timothy','Titus','Philemon','Hebrews','James','1 Peter','2 Peter','1 John','2 John','3 John','Jude','Revelation']],
+ ['Deuterocanon','#2f3d2a','#c9a45c',['Tobit','Judith','1 Maccabees','2 Maccabees','Wisdom','Sirach','Baruch']]];
+const BIBLE_ALIAS={'Psalms':['Psalm'],'Song of Songs':['Song of Solomon','Canticles'],'Ecclesiastes':['Qoheleth'],'Acts':['Acts of the Apostles'],'Revelation':['Revelations','Apocalypse'],'Sirach':['Ecclesiasticus'],'Wisdom':['Wisdom of Solomon']};
+const bnorm=v=>v.toLowerCase().trim().replace(/^(the\s+)?(holy\s+)?(gospel\s+(according\s+)?(to|of)|book\s+of(\s+the)?|letter\s+(to|of)(\s+the)?|epistle\s+(to|of)(\s+the)?|first\s+letter\s+of|second\s+letter\s+of)\s+/,'').replace(/^(third|iii)\s+/,'3').replace(/^(second|ii)\s+/,'2').replace(/^(first|i)\s+/,'1').replace(/[^a-z0-9]/g,'');
+const BIBLE_ALL=[{title:'The Holy Bible',sub:'The whole Bible',color:'#2b1a14',accent:'#c9a45c',keys:['bible','holybible','scripture']}].concat(BIBLE.flatMap(([part,color,accent,names])=>names.map(n=>({title:n,sub:'Bible · '+part,color,accent,keys:[n,...(BIBLE_ALIAS[n]||[])].map(bnorm)}))));
+function bibleHits(q){
+  const n=bnorm(q);if(n.length<2)return [];
+  if(['bible','thebible','holybible','scripture'].includes(n))return BIBLE_ALL.map(h=>({...h,bible:true}));
+  const sw=[],inc=[];
+  for(const h of BIBLE_ALL){if(h.keys.some(k=>k.startsWith(n)))sw.push(h);else if(n.length>=3&&h.keys.some(k=>k.includes(n)))inc.push(h)}
+  return sw.concat(inc).slice(0,12).map(h=>({...h,bible:true}));
+}
+function hitBtn(h){
+  const b=document.createElement('button');b.type='button';b.className='hit';
+  if(h.cover_i){const im=document.createElement('img');im.loading='lazy';im.alt='';im.src=coverUrl(h.cover_i,'S');b.append(im)}
+  else{const nc=document.createElement('div');nc.className='nocover';if(h.color){nc.style.background=`linear-gradient(${h.accent} 0 3px,transparent 3px calc(100% - 3px),${h.accent} 0),${h.color}`}b.append(nc)}
+  const tx=document.createElement('div'),bt=document.createElement('b'),sp=document.createElement('span');
+  bt.textContent=h.title;sp.textContent=h.bible?h.sub:[h.au,h.first_publish_year].filter(Boolean).join(' · ');tx.append(bt,sp);b.append(tx);
+  b.onclick=()=>choose(h);return b;
+}
+let searchCtl=null,searchT=null,pickToken=0;
+$('q').addEventListener('input',()=>{clearTimeout(searchT);const v=$('q').value.trim();if(v.length<2){searchCtl?.abort();$('res').replaceChildren();return}searchT=setTimeout(()=>search(v),350)});
+$('q').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();clearTimeout(searchT);const v=$('q').value.trim();if(v.length>1)search(v)}});
+async function search(v){
+  searchCtl?.abort();searchCtl=new AbortController();
+  const res=$('res'),local=bibleHits(v),msg=document.createElement('p');
+  res.replaceChildren(...local.map(hitBtn));msg.textContent='Searching…';res.append(msg);
+  try{
+    const r=await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(v)}&fields=key,title,author_name,author_alternative_name,cover_i,first_publish_year&limit=15`,{signal:searchCtl.signal});
+    if(!r.ok)throw new Error(r.status);
+    const j=await r.json(),seen=new Set(),hits=[];
+    for(const doc of j.docs||[]){const au=latinName(doc),k=(doc.title+'|'+au).toLowerCase();if(!doc.title||seen.has(k))continue;seen.add(k);hits.push({...doc,au});if(hits.length>=7)break}
+    if(searchCtl.signal.aborted)return;msg.remove();
+    if(!hits.length&&!local.length){msg.textContent='No matches. Try fewer words, or type it in below.';res.append(msg);return}
+    for(const h of hits)res.append(hitBtn(h));
+  }catch(e){if(e.name==='AbortError')return;if(local.length){msg.remove();return}msg.textContent='Search isn’t reachable right now. You can type the title and author below.';$('man').open=true}
+}
+async function choose(h){
+  const tok=++pickToken;clearTimeout(searchT);searchCtl?.abort();
+  if(h.bible){$('t').value=h.title;$('a').value='The Bible';$('q').value='';$('res').replaceChildren();pickCover=null;coverColor=h.color;coverAccent=h.accent;pickColor=h.color;pickAccent=h.accent;drawSw();drawPick();return}
+  $('t').value=h.title.slice(0,120);$('a').value=(h.au||'').slice(0,80);$('q').value='';$('res').replaceChildren();
+  pickCover=h.cover_i||null;coverColor=null;coverAccent=null;pickColor=PAL[hash(formId+h.title)%PAL.length];pickAccent=null;
+  drawSw();drawPick();
+  if(pickCover){const c=await coverColors(pickCover);if(tok!==pickToken||!c)return;coverColor=c.color;coverAccent=c.accent;pickColor=c.color;pickAccent=c.accent;drawSw();drawPick()}
+}
+function coverColors(id){return new Promise(done=>{
+  const im=new Image();im.crossOrigin='anonymous';const to=setTimeout(()=>done(null),8000);
+  im.onload=()=>{clearTimeout(to);try{
+    const c=document.createElement('canvas');c.width=24;c.height=36;const x=c.getContext('2d');x.drawImage(im,0,0,24,36);
+    const d=x.getImageData(0,0,24,36).data,m=new Map();
+    for(let i=0;i<d.length;i+=4){const k=(d[i]>>5)<<6|(d[i+1]>>5)<<3|(d[i+2]>>5),e=m.get(k)||[0,0,0,0];e[0]+=d[i];e[1]+=d[i+1];e[2]+=d[i+2];e[3]++;m.set(k,e)}
+    const cols=[...m.values()].map(e=>{const r=e[0]/e[3],g=e[1]/e[3],b=e[2]/e[3],mx=Math.max(r,g,b),mn=Math.min(r,g,b);return {r,g,b,n:e[3],s:mx?(mx-mn)/mx:0,l:(mx+mn)/510}});
+    if(!cols.length)return done(null);
+    const score=c=>c.n*(.5+c.s)*(c.l>.93||c.l<.05?.35:1);cols.sort((a,b)=>score(b)-score(a));
+    const main=cols[0],dist=(a,b)=>Math.hypot(a.r-b.r,a.g-b.g,a.b-b.b),acc=cols.find(c=>dist(c,main)>110&&c.n>=6);
+    const hex=c=>'#'+[c.r,c.g,c.b].map(v=>Math.round(v).toString(16).padStart(2,'0')).join('');
+    done({color:hex(main),accent:acc?hex(acc):null});
+  }catch{done(null)}};
+  im.onerror=()=>{clearTimeout(to);done(null)};im.src=coverUrl(id,'S');
+})}
+$('t').addEventListener('input',drawPick);$('a').addEventListener('input',drawPick);
+$('f').addEventListener('submit',e=>{
+  e.preventDefault();
+  const body={title:$('t').value.trim(),author:$('a').value.trim(),finished:$('d').value||'',rating,color:pickColor,accent:pickAccent||null,cover:pickCover||null,note:$('n').value.trim(),addedAt:editing?.addedAt||Date.now()};
+  if(!body.title){toast('Search for your book first, or type its title');$('man').open=true;$('t').focus();return}
+  if(editing){Object.assign(books.find(b=>b.id===editing.id)||{},body)}else books.push({id:formId,...body});
+  $('edit').close();toast(editing?'Saved':'Added to your shelf');after();
+});
+$('del').onclick=()=>{if(!editing)return;$('edit').close();removeBook(editing.id)};
+$('cancel').onclick=()=>$('edit').close();$('vClose').onclick=()=>$('view').close();
+$('addBtn').onclick=()=>openEdit();$('sort').onchange=render;
+$('name').onclick=()=>{const n=$('name');n.contentEditable='true';n.focus();document.getSelection().selectAllChildren(n)};
+$('name').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('name').blur()}});
+$('name').addEventListener('blur',()=>{const n=$('name');if(n.contentEditable!=='true')return;n.contentEditable='false';const v=n.textContent.trim().slice(0,60)||'My Bookshelf';if(v!==shelfName){shelfName=v;save()}render()});
+
+/* ---- wallpaper ---- */
+function paint(cv,W,H,withLabel){
+  cv.width=W;cv.height=H;const x=cv.getContext('2d');
+  const g=x.createRadialGradient(W/2,0,0,W/2,0,Math.max(W,H));g.addColorStop(0,'#2b4246');g.addColorStop(1,'#141f21');x.fillStyle=g;x.fillRect(0,0,W,H);
+  const list=sorted(),mx=W*.08,top=H*(withLabel?.16:.1),avail=H*(withLabel?.76:.8),innerW=W-mx*2;
+  let k=Math.min(W,H)/420,rows;
+  for(;k>.2;k*=.94){rows=chunk(list,innerW-40*k,k);if(rows.length*(214*k+34*k)<=avail)break}
+  if(rows.length>1){const tw=list.reduce((t,b)=>t+dims(b).w*k+1*k,0)/rows.length;const n=rows.length;rows=Array.from({length:n},()=>[]);let cum=0;
+    for(const b of list){const w=dims(b).w*k+1*k;rows[Math.min(n-1,Math.floor((cum+w/2)/tw))].push(b);cum+=w}rows=rows.filter(r=>r.length)}
+  const rh=214*k,gap=34*k,total=rows.length*(rh+gap),y0=top+(avail-total)/2;
+  rows.forEach((r,ri)=>{
+    const y=y0+ri*(rh+gap),base=y+rh;let rowW=r.reduce((s,b)=>s+dims(b).w*k+1*k,0),cx=mx+20*k+(innerW-40*k-rowW)/2;
+    const pg=x.createLinearGradient(0,base,0,base+16*k);pg.addColorStop(0,'#a26a40');pg.addColorStop(.35,'#7b4b2a');pg.addColorStop(1,'#5a331b');
+    x.fillStyle='rgba(0,0,0,.35)';x.fillRect(mx-6*k,base+16*k,innerW+12*k,10*k);x.fillStyle=pg;x.fillRect(mx-14*k,base,innerW+28*k,16*k);
+    r.forEach(b=>{
+      const d=dims(b),w=d.w*k,h=d.h*(rh-14*k);
+      x.fillStyle='rgba(0,0,0,.3)';x.fillRect(cx+1.5*k,base-h+2*k,w,h-2*k);
+      x.save();x.translate(cx,base-h);drawSpine(x,b,w,h,k);x.restore();cx+=w+1*k;
+    });
+  });
+  if(withLabel){x.fillStyle='#eef2ee';x.textAlign='center';x.font=`400 ${Math.min(W,H)*.045}px "Young Serif",serif`;x.fillText(shelfName,W/2,H*.09);
+    x.font=`500 ${Math.min(W,H)*.018}px Inter,sans-serif`;x.fillStyle='#a9bab6';x.fillText(`${books.length} book${books.length===1?'':'s'} read`,W/2,H*.09+Math.min(W,H)*.04)}
+}
+let wpBlob=null,wpURL=null,wpName='';
+const size=()=>$('wpSize').value.split('x').map(Number);
+async function prepare(){
+  $('wpSave').disabled=true;wpBlob=null;
+  const [W,H]=size(),cv=document.createElement('canvas');paint(cv,W,H,$('wpLabel').checked);
+  const blob=await new Promise(r=>cv.toBlob(r,'image/png'));
+  if(!blob){toast('Couldn’t draw the wallpaper — try a smaller size');return}
+  if(wpURL)URL.revokeObjectURL(wpURL);wpBlob=blob;wpURL=URL.createObjectURL(blob);wpName=`${fileBase()} wallpaper ${W}x${H}.png`;
+  $('prevImg').src=wpURL;$('wpSave').disabled=false;
+}
+$('wpBtn').onclick=async()=>{
+  if(!books.length){toast('Add a book first');return}
+  $('wp').showModal();$('prevImg').removeAttribute('src');
+  try{await Promise.all(FONT_LOADS.map(f=>document.fonts.load(f)))}catch{}
+  prepare();
+};
+$('wpSize').onchange=prepare;$('wpLabel').onchange=prepare;$('wpClose').onclick=()=>$('wp').close();
+$('wpSave').onclick=()=>{
+  if(!wpBlob)return;
+  const file=new File([wpBlob],wpName,{type:'image/png'});
+  if(matchMedia('(pointer:coarse)').matches&&navigator.canShare?.({files:[file]})){
+    navigator.share({files:[file]}).then(()=>toast('Choose “Save Image”, then set it as your wallpaper')).catch(e=>{if(e.name!=='AbortError'){download(wpBlob,wpName);toast('Check your Downloads')}});
+  }else{download(wpBlob,wpName);toast('Saved — check your Downloads folder')}
+};
+
+/* ---- standalone page to send ---- */
+function standaloneMain(){
+  const $=id=>document.getElementById(id);
+  function show(b){
+    $('vT').textContent=b.title||'Untitled';$('vA').textContent=b.author?'by '+b.author:'';
+    const when=b.finished?new Date(b.finished+'-01').toLocaleDateString(undefined,{month:'long',year:'numeric'}):'';
+    $('vM').textContent=[when&&'Finished '+when,b.rating?'★'.repeat(b.rating)+'☆'.repeat(5-b.rating):''].filter(Boolean).join(' · ');
+    $('vN').textContent=b.note||'';
+    const im=$('vC');if(b.cover){im.src='https://covers.openlibrary.org/b/id/'+b.cover+'-M.jpg';im.hidden=false;im.onerror=()=>{im.hidden=true}}else im.hidden=true;
+    $('view').showModal();
+  }
+  function render(){
+    const sh=$('shelf');sh.replaceChildren();
+    const small=innerWidth<600,scale=small?.86:1,rh=small?184:214;
+    const rows=chunk(B,sh.clientWidth-(small?16:36),scale);
+    rows.forEach((r,ri)=>{
+      const row=document.createElement('div');row.className='row';
+      r.forEach((b,i)=>{const el=spineEl(b,scale,rh);if(ri===rows.length-1&&i===r.length-1&&r.length>2)el.classList.add('lean');el.onclick=()=>show(b);row.append(el)});
+      if(ri===rows.length-1){const e=document.createElement('div');e.className='end';e.style.marginLeft='auto';row.append(e)}
+      sh.append(row);
+    });
+  }
+  $('vClose').onclick=()=>$('view').close();
+  let t;addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(render,80)});render();
+  Promise.all(FONT_LOADS.map(f=>document.fonts.load(f).catch(()=>{}))).then(render);
+}
+const escH=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+function buildPage(){
+  const data=JSON.stringify(sorted().map(({id,title,author,finished,rating,color,accent,cover,note})=>({id,title,author,finished,rating,color,accent,cover,note}))).replace(/</g,'\\u003c');
+  const css=document.querySelector('style').textContent;
+  const fonts=document.querySelector('link[rel=stylesheet]').outerHTML;
+  const n=books.length,when=new Date().toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric'});
+  const S='script';
+  return ['<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">',
+    '<title>'+escH(shelfName)+'</title>',fonts,'<style>'+css+'</style></head><body>',
+    '<main class="band"><header><div><h1>'+escH(shelfName)+'</h1><p class="sub">'+n+' book'+(n===1?'':'s')+' read · tap a spine for details</p></div></header>',
+    '<section id="shelf" aria-label="Bookshelf"></section><p class="note">Snapshot from '+escH(when)+'</p></main>',
+    '<dialog id="view"><div class="det"><div class="vhead"><div><h2 id="vT"></h2><p class="meta" id="vA"></p></div><img id="vC" alt="" hidden></div><p class="meta" id="vM"></p><p id="vN" style="margin:0"></p>',
+    '<div class="foot"><button class="btn pri" type="button" id="vClose">Close</button></div></div></dialog>',
+    '<'+S+'>{const B='+data+';const PAL='+JSON.stringify(PAL)+';',
+    'const hash='+hash+';const colorOf='+colorOf+';const lum='+lum+';const textOn='+textOn+';const rgba='+rgba+';const dims='+dims+';const FONTS='+JSON.stringify(FONTS)+';const FONT_LOADS='+JSON.stringify(FONT_LOADS)+';',
+    [noise,fit,vtext,drawSpine,finish,spineEl,chunk].map(f=>f.toString()).join('\n')+'('+standaloneMain+')()}</'+S+'>',
+    '</body></html>'].join('\n');
+}
+$('pgBtn').onclick=()=>{download(buildPage(),`${fileBase()}.html`,'text/html');toast('Saved — send the file to anyone')};
+
+/* ---- backup ---- */
+$('bkBtn').onclick=()=>{download(JSON.stringify({name:shelfName,books},null,1),`${fileBase()} backup.json`,'application/json');toast('Backup saved to your downloads')};
+$('rsBtn').onclick=()=>$('rsFile').click();
+const hexOk=v=>/^#[0-9a-f]{6}$/i.test(v)?v:null;
+$('rsFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const j=JSON.parse(await f.text());if(!Array.isArray(j.books))throw 0;
+  books=j.books.filter(b=>b&&typeof b.title==='string').map(b=>({id:String(b.id||Math.random().toString(36).slice(2)).slice(0,40),title:b.title.slice(0,120),author:String(b.author||'').slice(0,80),finished:/^\d{4}-\d{2}$/.test(b.finished)?b.finished:'',rating:Math.max(0,Math.min(5,b.rating|0)),color:hexOk(b.color),accent:hexOk(b.accent),cover:Number.isInteger(b.cover)?b.cover:null,note:String(b.note||'').slice(0,400),addedAt:+b.addedAt||0}));
+  if(typeof j.name==='string'&&j.name.trim())shelfName=j.name.trim().slice(0,60);toast(`Restored ${books.length} books`);after()}catch{toast('That file isn’t a bookshelf backup')}e.target.value=''};
+
+new ResizeObserver(()=>{clearTimeout(render.t);render.t=setTimeout(render,80)}).observe($('shelf'));
+try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j){books=Array.isArray(j.books)?j.books:[];if(j.name)shelfName=j.name}}catch{}
+after();
+Promise.all(FONT_LOADS.map(f=>document.fonts.load(f).catch(()=>{}))).then(render);
+}
+</script>
+</body>
+</html>
