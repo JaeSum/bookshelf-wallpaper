@@ -208,6 +208,7 @@ details[open]{display:grid;gap:12px}
   <img id="prevImg" alt="Wallpaper preview">
   <canvas id="livePrev" hidden></canvas>
   <div><span class="lbl">Wall colour</span><div class="swatches" id="bgs"></div></div>
+  <div><span class="lbl">Weather</span><div class="chips" id="weatherChips"></div></div>
   <label class="toggle"><input type="checkbox" id="wpLabel" checked> Show shelf name and count</label>
   <details class="deco" id="notesBox"><summary>Sticky notes<span class="cnt" id="notesCount"></span></summary>
     <div class="nlist" id="noteList"></div>
@@ -307,16 +308,6 @@ function drawCoverSpine(x,b,w,h,k,img,F){
   const iw=img.naturalWidth,ih=img.naturalHeight;let sx,sy,sw,sh;
   if(w/h>iw/ih){sw=iw;sh=iw*h/w;sx=0;sy=(ih-sh)/2}else{sh=ih;sw=ih*w/h;sy=0;sx=(iw-sw)/2}
   x.drawImage(img,sx,sy,sw,sh,0,0,w,h);
-  const c=colorOf(b),ink=textOn(c),title=F.up?(b.title||'Untitled').toUpperCase():(b.title||'Untitled');
-  const t=fit(x,title,F,false,Math.max(7*k,Math.min(14*k,(w-8*k)*.6)),7*k,h*.7-22*k);
-  const ll=Math.min(h*.78,t.tw+24*k),ly=Math.max(10*k,(h-ll)*.42);
-  // printed title panel: full width, crisp, slightly translucent so the art's texture shows through
-  x.fillStyle=rgba(c,.9);x.fillRect(0,ly,w,ll);
-  x.fillStyle=rgba(ink,.38);x.fillRect(0,ly+3.5*k,w,Math.max(1,.9*k));x.fillRect(0,ly+ll-4.4*k,w,Math.max(1,.9*k));
-  x.font=F.w+' '+t.s+'px '+F.f;x.fillStyle=ink;
-  x.shadowColor=lum(c)>140?'rgba(255,255,255,.45)':'rgba(0,0,0,.4)';x.shadowBlur=.6*k;x.shadowOffsetY=.6*k;
-  vtext(x,t.t,w/2,ly+(ll-t.tw)/2,t.tw,'start');
-  x.shadowColor='transparent';x.shadowBlur=0;x.shadowOffsetY=0;
   finish(x,w,h,k);
 }
 function finish(x,w,h,k){
@@ -330,9 +321,9 @@ function removeBook(id){const i=books.findIndex(b=>b.id===id);if(i<0)return;cons
 const hue=hex=>{const n=parseInt(hex.slice(1),16);let r=(n>>16)/255,g=(n>>8&255)/255,b=(n&255)/255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;if(d<.08)return 400+(1-mx)*50;let h=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;return (h*60+360)%360};
 const fileBase=()=>shelfName.replace(/[^\w\- ]+/g,'').trim()||'bookshelf';
 function download(data,name,type){const blob=data instanceof Blob?data:new Blob([data],{type});const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),10000)}
-let wpBg='cream';
+let wpBg='cream',wpWeather='none';
 function savePhotos(){try{localStorage.setItem(KEY+'.photos',JSON.stringify(photos));return true}catch{toast('That photo is too big to keep — try a smaller one');return false}}
-function save(){if(readOnly)return;try{localStorage.setItem(KEY,JSON.stringify({name:shelfName,books,bg:wpBg,decor}))}catch{$('note').textContent='This browser isn’t saving your books. Use “Back up books” before closing the page.'}}
+function save(){if(readOnly)return;try{localStorage.setItem(KEY,JSON.stringify({name:shelfName,books,bg:wpBg,decor,weather:wpWeather}))}catch{$('note').textContent='This browser isn’t saving your books. Use “Back up books” before closing the page.'}}
 function after(){save();render()}
 
 async function backfill(){
@@ -480,7 +471,7 @@ $('name').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();
 $('name').addEventListener('blur',()=>{const n=$('name');if(n.contentEditable!=='true')return;n.contentEditable='false';const v=n.textContent.trim().slice(0,60)||'My Bookshelf';if(v!==shelfName){shelfName=v;save()}render()});
 
 /* ---- wallpaper ---- */
-function paint(cv,W,H,withLabel){const S=buildScene(sorted(),W,H,{bg:wpBg,label:withLabel,decor:sceneDecor(decor,photos)});cv.width=W;cv.height=H;drawScene(cv.getContext('2d'),S)}
+function paint(cv,W,H,withLabel){const S=buildScene(sorted(),W,H,{bg:wpBg,label:withLabel,decor:sceneDecor(decor,photos),weather:wpWeather});cv.width=W;cv.height=H;drawScene(cv.getContext('2d'),S,{t:7.3})}
 const BGS={cream:['#fffaf3','#f1e4d3','#4a3a30','#9a8574'],blush:['#fff6f3','#f4dcd6','#5a3a3a','#a8817c'],peach:['#fff7ef','#f7dcc6','#5b3b2a','#aa8268'],sage:['#f8faf3','#dfe7d6','#3d4a3a','#7f8f79'],sky:['#f7fafd','#dbe6ef','#34465a','#7a8ea3'],lavender:['#fbf8fd','#e6def0','#463a5a','#8d80a3']};
 let wpBlob=null,wpURL=null,wpName='';
 const SIZES=[['Phone','1179x2556'],['Desktop','2560x1440'],['Full HD','1920x1080'],['4K','3840x2160'],['Tablet','2048x2732']];
@@ -494,9 +485,9 @@ function drawChips(){
 let liveSecs=30,live=null,wpMode='still';
 function setMode(m){wpMode=m;$('tStill').setAttribute('aria-pressed',String(m==='still'));$('tLive').setAttribute('aria-pressed',String(m==='live'));
   $('prevImg').hidden=$('stillPane').hidden=m!=='still';$('livePrev').hidden=$('livePane').hidden=m!=='live';
-  if(m==='live'){if(!live)live=startLive($('livePrev'),()=>sorted(),{secs:()=>6,bg:()=>wpBg,label:()=>$('wpLabel').checked,decor:()=>sceneDecor(decor,photos)});else{live.rebuild();live.restart()}}else{live?.stop();live=null}}
+  if(m==='live'){if(!live)live=startLive($('livePrev'),()=>sorted(),{secs:()=>6,bg:()=>wpBg,label:()=>$('wpLabel').checked,decor:()=>sceneDecor(decor,photos),weather:()=>wpWeather});else{live.rebuild();live.restart()}}else{live?.stop();live=null}}
 $('tStill').onclick=()=>setMode('still');$('tLive').onclick=()=>setMode('live');
-const liveLink=async()=>{const d={seed:decor.seed,vase:decor.vase,notes:await Promise.all(decor.notes.map(async n=>({id:n.id,color:n.color,text:n.text||'',photo:!!n.photo,src:n.photo&&photos[n.id]?await shrinkImg(photos[n.id],320,.72):null})))};return siteUrl()+'#live:'+await packShelf({s:liveSecs,l:$('wpLabel').checked?1:0,d})};
+const liveLink=async()=>{const d={seed:decor.seed,vase:decor.vase,notes:await Promise.all(decor.notes.map(async n=>({id:n.id,color:n.color,text:n.text||'',photo:!!n.photo,src:n.photo&&photos[n.id]?await shrinkImg(photos[n.id],320,.72):null})))};return siteUrl()+'#live:'+await packShelf({s:liveSecs,l:$('wpLabel').checked?1:0,d,w:wpWeather})};
 $('liveOpen').onclick=async()=>{const u=await liveLink();window.open(u,'_blank')||(location.href=u)};
 $('liveCopy').onclick=async()=>copyText(await liveLink(),'Live wallpaper link copied');
 let photoTarget=null;const NOTE_KEYS=['yellow','pink','mint','blue','lavender','peach'];
@@ -504,6 +495,7 @@ function decorChanged(now){save();clearTimeout(decorChanged.t);decorChanged.t=se
 function chipsInto(el,map,cur,fn){el.replaceChildren(...Object.entries(map).map(([v,l])=>{const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=l;b.setAttribute('aria-pressed',String(v===cur));b.onclick=()=>fn(v);return b}))}
 const vaseLabel=()=>decor.vase.on?`· ${decor.vase.count} ${decor.vase.type==='mixed'?'mixed':FLOWERS[decor.vase.type].toLowerCase()}`:'';
 function drawDecorUI(){
+  chipsInto($('weatherChips'),WEATHER,wpWeather,v=>{wpWeather=v;drawDecorUI();save();prepare();live?.rebuild()});
   $('notesCount').textContent=decor.notes.length?`· ${decor.notes.length}`:'';
   $('addNote').disabled=$('addPhoto').disabled=decor.notes.length>=8;$('shuffle').hidden=!decor.notes.length&&!decor.vase.on;
   $('noteList').replaceChildren(...decor.notes.map(n=>{
@@ -722,6 +714,25 @@ function drawVase(x,vx,base,k,cfg,seed){
 }
 const S_OFF=20000;
 
+/* ---------- weather: falling snow or rain ---------- */
+const WEATHER={none:'None',snow:'Snow',rain:'Rain'};
+function flakeSprite(){if(flakeSprite.c)return flakeSprite.c;const c=document.createElement('canvas');c.width=c.height=40;const x=c.getContext('2d');
+  x.shadowColor='rgba(95,75,55,.38)';x.shadowBlur=5;x.shadowOffsetY=1;const g=x.createRadialGradient(20,20,0,20,20,10);g.addColorStop(0,'#ffffff');g.addColorStop(.7,'rgba(255,255,255,.95)');g.addColorStop(1,'rgba(255,255,255,0)');
+  x.fillStyle=g;x.beginPath();x.arc(20,20,10,0,7);x.fill();return flakeSprite.c=c}
+function makeParts(S){const r=rng(97),area=S.W*S.H/(1600*900),n=Math.round((S.o.weather==='rain'?240:170)*Math.min(2.5,Math.max(.6,area))),a=[];
+  for(let i=0;i<n;i++)a.push({x:r()*S.W,y:r()*S.H,z:.35+r()*.65,ph:r()*6.28});return a}
+const md=(v,m)=>((v%m)+m)%m;
+function drawWeather(x,S,t){
+  const {W,H}=S,u=Math.min(W,H)/1000;if(!S.parts)S.parts=makeParts(S);
+  if(S.o.weather==='snow'){const sp=flakeSprite();
+    for(const p of S.parts){const sz=(2.2+p.z*5.5)*u,vy=(28+p.z*62)*u,y=md(p.y+vy*t,H+40*u)-20*u,xx=md(p.x+Math.sin(t*(.45+p.z*.5)+p.ph)*22*u+8*u*t*p.z,W);
+      x.globalAlpha=.5+.5*p.z;x.drawImage(sp,xx-sz*2,y-sz*2,sz*4,sz*4)}
+    x.globalAlpha=1;
+  }else if(S.o.weather==='rain'){x.lineCap='round';
+    for(const p of S.parts){const vy=(950+p.z*750)*u,len=(16+p.z*26)*u,y=md(p.y+vy*t,H+len)-len,xx=md(p.x-vy*t*.16,W+len)-len*.2;
+      x.strokeStyle=`rgba(98,120,142,${.18+.34*p.z})`;x.lineWidth=(.7+p.z*1.1)*u*1.3;x.beginPath();x.moveTo(xx,y);x.lineTo(xx-len*.16,y+len);x.stroke()}
+  }
+}
 /* ---------- scene: two shelves on a wall ---------- */
 const BOOKEND_U=34;
 function splitRows(list){
@@ -755,6 +766,7 @@ function buildScene(list,W,H,o){
   if(hasNotes)S.notes=layoutNotes(S);
   // bake layers
   S.wall=o.page?null:wallLayer(S);
+  if(S.notes&&S.notes.length){const [nc,nx]=layer(S);for(const N of S.notes)drawNote(nx,N,S.k);S.noteL=nc}
   S.shelf=shelfLayer(S);S.front=frontLayer(S);
   for(const it of S.books)it.cv=bookCanvas(it,k);
   return S;
@@ -768,7 +780,6 @@ function wallLayer(S){
   const v=x.createRadialGradient(W/2,H/2,Math.min(W,H)*.35,W/2,H/2,Math.hypot(W,H)*.62);v.addColorStop(0,'rgba(90,60,35,0)');v.addColorStop(1,'rgba(90,60,35,.10)');x.fillStyle=v;x.fillRect(0,0,W,H);
   if(S.o.label){const f=Math.min(W,H);x.textAlign='center';x.fillStyle=P[2];x.font=`400 ${f*.045}px "Young Serif",serif`;x.fillText(shelfName,W/2,H*.085);
     x.font=`500 ${f*.017}px Inter,sans-serif`;x.fillStyle=P[3];x.fillText(`${S.books.length} book${S.books.length===1?'':'s'} read`,W/2,H*.085+f*.038)}
-  for(const N of S.notes||[])drawNote(x,N,S.k);
   return c;
 }
 function shade(hex,amt){const n=parseInt(hex.slice(1),16);const f=v=>Math.max(0,Math.min(255,Math.round(v+255*amt)));return `rgb(${f(n>>16)},${f(n>>8&255)},${f(n&255)})`}
@@ -819,6 +830,8 @@ function bookCanvas(it,k){
 function drawScene(x,S,st={}){
   x.clearRect(0,0,S.W,S.H);
   if(S.wall)x.drawImage(S.wall,0,0);
+  if(S.o.weather&&S.o.weather!=='none')drawWeather(x,S,st.t||0);
+  if(S.noteL)x.drawImage(S.noteL,0,0);
   if(st.thought&&st.thought.a>0)drawThought(x,S,st.thought);
   x.drawImage(S.shelf,0,0);
   for(const it of S.books){const lift=(st.lift&&st.lift.get(it.b.id))||0;
@@ -868,13 +881,13 @@ function drawThought(x,S,th){
 /* ---------- live animation ---------- */
 const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
 function startLive(canvas,getList,opt){
-  const ctx=canvas.getContext('2d');let S=null,order=[],bag=[],curCyc=-1,curId=null,start=performance.now(),last='',raf=0,alive=true;
+  const ctx=canvas.getContext('2d');let S=null,order=[],bag=[],curCyc=-1,curId=null,lastW=0,start=performance.now(),last='',raf=0,alive=true;
   const secs=()=>Math.max(4,opt.secs()||30);
   function build(){
     const dpr=Math.min(2,devicePixelRatio||1),r=canvas.getBoundingClientRect();
     const W=Math.max(320,Math.round(r.width*dpr)),H=Math.max(320,Math.round(r.height*dpr));
     canvas.width=W;canvas.height=H;const list=getList();
-    S=buildScene(list,W,H,{bg:opt.bg(),label:opt.label(),live:true,decor:opt.decor?opt.decor():null});
+    S=buildScene(list,W,H,{bg:opt.bg(),label:opt.label(),live:true,decor:opt.decor?opt.decor():null,weather:opt.weather?opt.weather():'none'});
     order=S.books.map((_,i)=>i);last='';
   }
   function frame(now){
@@ -886,8 +899,9 @@ function startLive(canvas,getList,opt){
     const rise=Math.min(1.1,T*.08),fade=Math.min(1.4,T*.1),liftMax=34*S.k;
     let lift=t<rise?ease(t/rise):t>T-rise-.3?ease(Math.max(0,(T-.3-t)/rise)):1;lift*=liftMax;
     let a=t<rise?0:t<rise+fade?ease((t-rise)/fade):t>T-rise-fade-.3?ease(Math.max(0,(T-rise-.3-t)/fade)):1;
-    const key=it.b.id+'|'+Math.round(lift)+'|'+Math.round(a*60);if(key===last)return;last=key;
-    drawScene(ctx,S,{lift:new Map([[it.b.id,lift]]),thought:{it,a,lift}});
+    const wx=S.o.weather&&S.o.weather!=='none';
+    if(wx){if(now-lastW<32)return;lastW=now}else{const key=it.b.id+'|'+Math.round(lift)+'|'+Math.round(a*60);if(key===last)return;last=key}
+    drawScene(ctx,S,{lift:new Map([[it.b.id,lift]]),thought:{it,a,lift},t:el});
   }
   build();raf=requestAnimationFrame(frame);
   const ro=new ResizeObserver(()=>{clearTimeout(ro.t);ro.t=setTimeout(build,120)});ro.observe(canvas);
@@ -939,7 +953,7 @@ async function unpackShelf(s){
   const d=o.d||{},v=d.vase||{};
   const dec={seed:+d.seed||7,vase:{on:!!v.on,type:FLOWERS[v.type]?v.type:'tulip',count:Math.max(1,Math.min(15,+v.count||7)),style:VASES[v.style]?v.style:'ceramic'},
     notes:(Array.isArray(d.notes)?d.notes:[]).slice(0,8).map(n=>({id:String(n.id||Math.random()).slice(0,20),color:NOTE_COLORS[n.color]?n.color:'yellow',text:String(n.text||'').slice(0,90),photo:!!n.photo,src:typeof n.src==='string'&&/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(n.src)?n.src:null}))};
-  return {decor:dec,name:String(o.n||'My Bookshelf').slice(0,60),bg:BGS[o.g]?o.g:'cream',secs:+o.s||30,label:o.l!==0,
+  return {weather:WEATHER[o.w]?o.w:'none',decor:dec,name:String(o.n||'My Bookshelf').slice(0,60),bg:BGS[o.g]?o.g:'cream',secs:+o.s||30,label:o.l!==0,
     books:(o.b||[]).filter(a=>Array.isArray(a)&&typeof a[1]==='string').map(a=>({id:String(a[0]).slice(0,40),title:a[1].slice(0,120),author:String(a[2]).slice(0,80),color:hex(a[3]),accent:hex(a[4]),pages:+a[5]>0?Math.min(5000,+a[5]|0):null,note:String(a[6]).slice(0,400),finished:/^\d{4}-\d{2}$/.test(a[7])?a[7]:'',rating:Math.max(0,Math.min(5,a[8]|0)),cover:Number.isInteger(a[9])&&a[9]>0?a[9]:null,addedAt:+a[10]||0}))};
 }
 const siteUrl=()=>location.origin+location.pathname;
@@ -960,17 +974,17 @@ $('rsFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const 
   if(typeof j.name==='string'&&j.name.trim())shelfName=j.name.trim().slice(0,60);toast(`Restored ${books.length} books`);after()}catch{toast('That file isn’t a bookshelf backup')}e.target.value=''};
 
 applyTextures();
-try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j){books=Array.isArray(j.books)?j.books:[];if(j.name)shelfName=j.name;if(j.bg&&BGS[j.bg])wpBg=j.bg;if(j.decor&&Array.isArray(j.decor.notes))decor={...decor,...j.decor,vase:{...decor.vase,...(j.decor.vase||{})}}}}catch{}
+try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j){books=Array.isArray(j.books)?j.books:[];if(j.name)shelfName=j.name;if(j.bg&&BGS[j.bg])wpBg=j.bg;if(WEATHER[j.weather])wpWeather=j.weather;if(j.decor&&Array.isArray(j.decor.notes))decor={...decor,...j.decor,vase:{...decor.vase,...(j.decor.vase||{})}}}}catch{}
 try{photos=JSON.parse(localStorage.getItem(KEY+'.photos')||'{}')||{}}catch{photos={}}
 const fontsReady=Promise.all(FONT_LOADS.map(f=>document.fonts.load(f).catch(()=>{})));
 (async()=>{
   const h=decodeURIComponent(location.hash||'');
   if(h.startsWith('#live')){
-    let cfg={books,name:shelfName,bg:wpBg,secs:30,label:true,decor:sceneDecor(decor,photos),local:true};
+    let cfg={books,name:shelfName,bg:wpBg,secs:30,label:true,decor:sceneDecor(decor,photos),local:true,weather:wpWeather};
     if(h.length>6){try{cfg=await unpackShelf(h.slice(6))}catch{}}
     books=cfg.books;shelfName=cfg.name;document.body.classList.add('live');document.title=shelfName;
     const dd=cfg.local?cfg.decor:sceneDecor(cfg.decor,{});
-    await fontsReady;await coversReady(books);await decorReady(dd);const L=startLive($('live'),()=>sorted(),{secs:()=>cfg.secs,bg:()=>cfg.bg,label:()=>cfg.label,decor:()=>dd});
+    await fontsReady;await coversReady(books);await decorReady(dd);const L=startLive($('live'),()=>sorted(),{secs:()=>cfg.secs,bg:()=>cfg.bg,label:()=>cfg.label,decor:()=>dd,weather:()=>cfg.weather});
     addEventListener('covers',()=>L.rebuild());
     return;
   }
