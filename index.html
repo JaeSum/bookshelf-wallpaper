@@ -59,12 +59,24 @@ body.live #live{display:block;position:fixed;inset:0;width:100vw;height:100vh}
 .seg{display:flex;gap:6px;padding:4px;border-radius:999px;background:var(--hover);width:max-content;max-width:100%}
 .seg .chip{border-color:transparent;background:none}
 .seg .chip[aria-pressed=true]{background:#fff;color:var(--ink);border-color:var(--line);box-shadow:0 1px 3px rgba(70,45,20,.12)}
-.deco{border:1px solid var(--line);border-radius:14px;padding:10px 14px}
-.deco summary{font-weight:600;color:var(--ink);font-size:15px;min-height:36px}
-.deco[open]{gap:14px;padding-bottom:14px}
+.grp{display:grid;gap:14px}
+.grp h3{margin:2px 0 -2px;font:600 15px/1.2 Inter,sans-serif;color:var(--ink)}
+.sheet>.grp+.grp{border-top:1px solid var(--line);padding-top:16px}
+.sheetfoot{position:sticky;bottom:0;z-index:2;margin:0 -24px -24px;padding:16px 24px 22px;background:linear-gradient(rgba(255,253,250,0),var(--panel) 22px);display:grid}
+.btn.big{min-height:50px}
+.how.center{text-align:center}
+.linkbtn{all:unset;cursor:pointer;justify-self:start;color:var(--accent2);font-weight:600;font-size:14px;padding:6px 2px;border-radius:6px}
+.linkbtn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.row2.small .btn{min-height:42px;font-size:14px}
+.deco{border:1px solid var(--line);border-radius:14px;padding:10px 14px;background:#fff}
+.deco summary{font-weight:600;color:var(--ink);font-size:15px;min-height:40px}
+.deco[open]{padding-bottom:14px}
+.dbody{display:grid;gap:14px;padding-top:6px}
+.lbl b{font-weight:600;color:var(--accent2);margin-left:4px}
 .cnt{color:var(--soft);font-weight:400;margin-left:8px}
 .nlist{display:grid;gap:8px}.nlist:empty{display:none}
-.nrow{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;gap:8px;align-items:center}
+.nrow{display:grid;grid-template-columns:32px minmax(0,1fr) 36px;gap:10px;align-items:center}
+.nrow.ph{grid-template-columns:32px 42px minmax(0,1fr) 36px}
 .nrow input{min-height:42px}
 .ncol{width:32px;height:32px;border-radius:7px;border:1px solid rgba(0,0,0,.12);cursor:pointer;box-shadow:0 1px 2px rgba(70,45,20,.15)}
 .nthumb{width:42px;height:42px;border-radius:6px;cursor:pointer;border:1px solid var(--line);padding:0;background:var(--hover)}
@@ -83,7 +95,7 @@ input[type=range]{min-height:auto;padding:0;border:0;background:none;accent-colo
 @media(min-width:641px){.bar{display:none}}
 
 /* dialogs */
-dialog{border:0;border-radius:20px;padding:0;width:min(500px,94vw);max-height:90vh;overflow:auto;background:var(--panel);color:var(--ink);box-shadow:0 30px 80px rgba(90,60,35,.28)}
+dialog{border:0;border-radius:20px;padding:0;width:min(520px,94vw);max-height:90vh;overflow:auto;background:var(--panel);color:var(--ink);box-shadow:0 30px 80px rgba(90,60,35,.28)}
 dialog::backdrop{background:rgba(70,50,35,.32);backdrop-filter:blur(2px)}
 .sheet{padding:24px;display:grid;gap:16px}
 .shead{display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -105,7 +117,6 @@ input::placeholder,textarea::placeholder{color:var(--faint)}
 .pick{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:16px;align-items:end;padding:14px 16px;border-radius:14px;background:var(--hover)}
 .pick img{width:62px;height:92px;object-fit:cover;border-radius:4px;box-shadow:0 4px 10px rgba(70,45,20,.22)}
 .pick strong{display:block;font:400 19px/1.2 "Young Serif",serif}.pick span{color:var(--soft);font-size:14px}
-.pick .spine{cursor:default}.pick .spine:hover{transform:none}
 details summary{cursor:pointer;font-size:14px;color:var(--soft);min-height:28px;display:flex;align-items:center;list-style:none}
 details summary::-webkit-details-marker{display:none}
 details summary::before{content:"+";margin-right:8px;font-size:16px}
@@ -143,6 +154,7 @@ details[open]{display:grid;gap:12px}
 @media(max-width:640px){
   dialog{width:100%;max-width:100%;margin:auto 0 0;border-radius:22px 22px 0 0;max-height:92vh}
   .sheet{padding:20px 18px calc(20px + env(safe-area-inset-bottom))}
+  .sheetfoot{margin:0 -18px calc(-20px - env(safe-area-inset-bottom));padding:14px 18px calc(18px + env(safe-area-inset-bottom))}
   .toast{bottom:calc(90px + env(safe-area-inset-bottom))}
   .two{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   .view img{width:76px}
@@ -207,33 +219,36 @@ details[open]{display:grid;gap:12px}
   <div class="seg" role="group" aria-label="Wallpaper type"><button class="chip" type="button" id="tStill" aria-pressed="true">Still image</button><button class="chip" type="button" id="tLive" aria-pressed="false">Live · animated</button></div>
   <img id="prevImg" alt="Wallpaper preview">
   <canvas id="livePrev" hidden></canvas>
-  <div><span class="lbl">Wall colour</span><div class="swatches" id="bgs"></div></div>
-  <div><span class="lbl">Weather</span><div class="chips" id="weatherChips"></div></div>
-  <label class="toggle"><input type="checkbox" id="wpLabel" checked> Show shelf name and count</label>
-  <details class="deco" id="notesBox"><summary>Sticky notes<span class="cnt" id="notesCount"></span></summary>
-    <div class="nlist" id="noteList"></div>
-    <div class="row2"><button class="btn" type="button" id="addNote">+ Text note</button><button class="btn" type="button" id="addPhoto">+ Photo note</button></div>
-    <button class="btn ghost" type="button" id="shuffle" style="justify-self:start">Shuffle positions</button>
-  </details>
-  <details class="deco" id="vaseBox"><summary>Flower vase<span class="cnt" id="vaseState"></span></summary>
-    <label class="toggle"><input type="checkbox" id="vaseOn"> Add a vase of flowers on the bottom-left of the shelf</label>
-    <div id="vaseOpts" style="display:grid;gap:14px">
-      <div><span class="lbl">Flowers</span><div class="chips" id="flowerChips"></div></div>
-      <label>How many stems · <span id="countVal"></span><input type="range" id="flowerCount" min="1" max="15" step="1"></label>
-      <div><span class="lbl">Vase</span><div class="chips" id="vaseChips"></div></div>
-    </div>
-  </details>
+  <section class="grp" aria-labelledby="gLook"><h3 id="gLook">Look</h3>
+    <div><span class="lbl">Wall colour</span><div class="swatches" id="bgs"></div></div>
+    <div><span class="lbl">Weather</span><div class="chips" id="weatherChips"></div></div>
+    <div id="stillPane"><span class="lbl">Size</span><div class="chips" id="sizes"></div></div>
+    <div id="livePane" hidden><span class="lbl">Next book every</span><div class="chips" id="secs"></div></div>
+    <label class="toggle"><input type="checkbox" id="wpLabel" checked> Show shelf name and count</label>
+  </section>
+  <section class="grp" aria-labelledby="gDeco"><h3 id="gDeco">Decorations</h3>
+    <details class="deco"><summary><span>Sticky notes</span><span class="cnt" id="notesCount"></span></summary><div class="dbody">
+      <p class="how">Stuck on the wall beside your shelves. Tap a colour square to change it.</p>
+      <div class="nlist" id="noteList"></div>
+      <div class="row2 small"><button class="btn" type="button" id="addNote">+ Text note</button><button class="btn" type="button" id="addPhoto">+ Photo note</button></div>
+    </div></details>
+    <details class="deco"><summary><span>Flower vase</span><span class="cnt" id="vaseState"></span></summary><div class="dbody">
+      <label class="toggle"><input type="checkbox" id="vaseOn"> Add a vase to the bottom-left of the shelf</label>
+      <div id="vaseOpts" class="grp">
+        <div><span class="lbl">Flowers</span><div class="chips" id="flowerChips"></div></div>
+        <div><label class="lbl" for="flowerCount">How many stems <b id="countVal"></b></label><input type="range" id="flowerCount" min="1" max="15" step="1"></div>
+        <div><span class="lbl">Vase</span><div class="chips" id="vaseChips"></div></div>
+      </div>
+    </div></details>
+    <button class="linkbtn" type="button" id="shuffle">↻ Shuffle notes and flowers</button>
+  </section>
+  <div class="sheetfoot">
+    <div id="stillFoot" class="grp"><button class="btn pri big" type="button" id="wpSave" disabled>Save wallpaper</button>
+      <p class="how center">Not saving? Press and hold the preview (phone) or right-click it (computer) and choose Save image.</p></div>
+    <div id="liveFoot" class="grp" hidden><div class="row2"><button class="btn pri big" type="button" id="liveOpen">Open live wallpaper</button><button class="btn big" type="button" id="liveCopy">Copy link</button></div>
+      <p class="how">Each book lifts off the shelf in turn and its note drifts onto the wall like a thought. To use it as your desktop, add the copied link as a web wallpaper in <b>Lively Wallpaper</b> (Windows) or <b>Plash</b> (Mac). Phones can’t run web wallpapers — use a still image there.</p></div>
+  </div>
   <input type="file" id="photoFile" accept="image/*" hidden>
-  <div id="stillPane" style="display:grid;gap:16px">
-    <div><span class="lbl">Size</span><div class="chips" id="sizes"></div></div>
-    <button class="btn pri" type="button" id="wpSave" disabled style="min-height:50px">Save wallpaper</button>
-    <p class="how" style="text-align:center;margin-top:-6px">Not saving? Press and hold the preview (phone) or right-click it (computer) and choose Save image.</p>
-  </div>
-  <div id="livePane" style="display:grid;gap:16px" hidden>
-    <div><span class="lbl">Next book every</span><div class="chips" id="secs"></div></div>
-    <div class="row2"><button class="btn pri" type="button" id="liveOpen" style="min-height:50px">Open live wallpaper</button><button class="btn" type="button" id="liveCopy" style="min-height:50px">Copy link</button></div>
-    <p class="how">Each book lifts off the shelf in turn and its note drifts onto the wall like a thought. To make it your desktop wallpaper, copy the link and add it as a web/URL wallpaper in <b>Lively Wallpaper</b> (Windows, free) or <b>Plash</b> (Mac, free). Phones can’t use web pages as wallpaper — use a still image there.</p>
-  </div>
 </div></dialog>
 
 <dialog id="more"><div class="sheet">
@@ -271,7 +286,7 @@ function vtext(x,t,cx,y0,len,align){x.save();x.translate(cx,y0);x.rotate(Math.PI
 function drawSpine(x,b,w,h,k){
   const c=colorOf(b),bible=b.author==='The Bible',ac=b.accent||null,hv=hash(b.id+'v');
   const v0=bible?0:hv%5,v=w<26*k&&(v0===1||v0===3)?0:v0,F=bible?FONTS[3]:v===4?{f:'"Playfair Display"',w:700,up:0}:FONTS[hash(b.id+'f')%FONTS.length];
-  if(b.cover&&!drawSpine.plain){const e=coverImg(b.cover);if(e.ok){drawCoverSpine(x,b,w,h,k,e.im,F);return}}
+  if(b.cover){const e=coverImg(b.cover);if(e.ok){drawCoverSpine(x,b,w,h,k,e.im,F);return}}
   const band=ac||rgba(textOn(c),.35);let tc=bible&&ac?ac:textOn(c);
   x.fillStyle=c;x.fillRect(0,0,w,h);
   let top=18*k,bot=h-18*k,auPos='end',emblem=false,ital=v===4,ttc=tc;
@@ -484,7 +499,7 @@ function drawChips(){
 }
 let liveSecs=30,live=null,wpMode='still';
 function setMode(m){wpMode=m;$('tStill').setAttribute('aria-pressed',String(m==='still'));$('tLive').setAttribute('aria-pressed',String(m==='live'));
-  $('prevImg').hidden=$('stillPane').hidden=m!=='still';$('livePrev').hidden=$('livePane').hidden=m!=='live';
+  $('prevImg').hidden=$('stillPane').hidden=$('stillFoot').hidden=m!=='still';$('livePrev').hidden=$('livePane').hidden=$('liveFoot').hidden=m!=='live';
   if(m==='live'){if(!live)live=startLive($('livePrev'),()=>sorted(),{secs:()=>6,bg:()=>wpBg,label:()=>$('wpLabel').checked,decor:()=>sceneDecor(decor,photos),weather:()=>wpWeather});else{live.rebuild();live.restart()}}else{live?.stop();live=null}}
 $('tStill').onclick=()=>setMode('still');$('tLive').onclick=()=>setMode('live');
 const liveLink=async()=>{const d={seed:decor.seed,vase:decor.vase,notes:await Promise.all(decor.notes.map(async n=>({id:n.id,color:n.color,text:n.text||'',photo:!!n.photo,src:n.photo&&photos[n.id]?await shrinkImg(photos[n.id],320,.72):null})))};return siteUrl()+'#live:'+await packShelf({s:liveSecs,l:$('wpLabel').checked?1:0,d,w:wpWeather})};
@@ -498,11 +513,12 @@ function drawDecorUI(){
   chipsInto($('weatherChips'),WEATHER,wpWeather,v=>{wpWeather=v;drawDecorUI();save();prepare();live?.rebuild()});
   $('notesCount').textContent=decor.notes.length?`· ${decor.notes.length}`:'';
   $('addNote').disabled=$('addPhoto').disabled=decor.notes.length>=8;$('shuffle').hidden=!decor.notes.length&&!decor.vase.on;
+  $('addNote').title=decor.notes.length>=8?'Up to 8 notes':'';
   $('noteList').replaceChildren(...decor.notes.map(n=>{
-    const row=document.createElement('div');row.className='nrow';
+    const row=document.createElement('div');row.className=n.photo?'nrow ph':'nrow';
     const c=document.createElement('button');c.type='button';c.className='ncol';c.style.background=NOTE_COLORS[n.color]||NOTE_COLORS.yellow;c.title='Change colour';c.setAttribute('aria-label','Change note colour');
     c.onclick=()=>{n.color=NOTE_KEYS[(NOTE_KEYS.indexOf(n.color)+1)%NOTE_KEYS.length];drawDecorUI();decorChanged(true)};row.append(c);
-    if(n.photo){const t=document.createElement('button');t.type='button';t.className='nthumb';t.title='Change photo';t.setAttribute('aria-label','Change photo');if(photos[n.id])t.style.background=`center/cover no-repeat url("${photos[n.id]}")`;t.onclick=()=>{photoTarget=n.id;$('photoFile').click()};row.append(t)}else row.append(document.createElement('span'));
+    if(n.photo){const t=document.createElement('button');t.type='button';t.className='nthumb';t.title='Change photo';t.setAttribute('aria-label','Change photo');if(photos[n.id])t.style.background=`center/cover no-repeat url("${photos[n.id]}")`;t.onclick=()=>{photoTarget=n.id;$('photoFile').click()};row.append(t)}
     const i=document.createElement('input');i.value=n.text||'';i.maxLength=n.photo?40:90;i.placeholder=n.photo?'Caption (optional)':'Write something…';i.setAttribute('aria-label',n.photo?'Photo caption':'Note text');i.oninput=()=>{n.text=i.value;decorChanged()};row.append(i);
     const x=document.createElement('button');x.type='button';x.className='x';x.textContent='×';x.setAttribute('aria-label','Remove note');x.onclick=()=>{decor.notes=decor.notes.filter(q=>q!==n);delete photos[n.id];savePhotos();drawDecorUI();decorChanged(true)};row.append(x);
     return row}));
@@ -587,6 +603,11 @@ const VASES={ceramic:'Ceramic',glass:'Glass',terracotta:'Terracotta'};
 const VASE_U=120;
 let decor={notes:[],seed:7,vase:{on:false,type:'tulip',count:7,style:'ceramic'}},photos={};
 const IMGS=new Map();
+const DATA_IMG=/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
+function cleanDecor(d){d=d&&typeof d==='object'?d:{};const v=d.vase||{};
+  return {seed:(+d.seed|0)||7,vase:{on:!!v.on,type:FLOWERS[v.type]?v.type:'tulip',count:Math.max(1,Math.min(15,+v.count||7)),style:VASES[v.style]?v.style:'ceramic'},
+    notes:(Array.isArray(d.notes)?d.notes:[]).slice(0,8).map((n,i)=>({id:String(n&&n.id||'n'+i).replace(/[^\w-]/g,'').slice(0,20)||'n'+i,color:NOTE_COLORS[n&&n.color]?n.color:'yellow',text:String(n&&n.text||'').slice(0,90),photo:!!(n&&n.photo),src:typeof (n&&n.src)==='string'&&DATA_IMG.test(n.src)?n.src:null}))}}
+function cleanPhotos(p){const o={};if(p&&typeof p==='object')for(const [k,v] of Object.entries(p))if(typeof v==='string'&&DATA_IMG.test(v))o[String(k).slice(0,20)]=v;return o}
 function photoImg(src){if(!src)return null;let e=IMGS.get(src);if(!e){const im=new Image();e={im,ok:false};e.p=new Promise(r=>{im.onload=()=>{e.ok=true;r()};im.onerror=()=>r()});im.src=src;IMGS.set(src,e)}return e}
 function rng(seed){let a=seed>>>0||1;return()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
 function sceneDecor(d,ph){
@@ -747,7 +768,6 @@ function buildScene(list,W,H,o){
   const maxU=Math.max(70,...rows.map((r,i)=>r.reduce((a,b)=>a+dims(b).w+1,0)+(i===1?BOOKEND_U+(vaseOn?VASE_U:0):0)))+(hasNotes?2*150:0);
   const UNIT=532,kMax=o.page?o.dpr:Math.min(W,H)/400;
   let top=0,avail=Infinity;
-  const band=null;
   if(!o.page){if(o.live){top=H*(W>H?.40:.42);avail=H*(W>H?.54:.48)}else{top=H*(o.label?.17:.08);avail=H*(o.label?.76:.84)}}
   const k=Math.min(kMax,innerW/(maxU+70),avail/UNIT);
   const blockH=UNIT*k;let y0=o.page?16*k:top+(avail-blockH)/2;
@@ -881,14 +901,14 @@ function drawThought(x,S,th){
 /* ---------- live animation ---------- */
 const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
 function startLive(canvas,getList,opt){
-  const ctx=canvas.getContext('2d');let S=null,order=[],bag=[],curCyc=-1,curId=null,lastW=0,start=performance.now(),last='',raf=0,alive=true;
+  const ctx=canvas.getContext('2d');let S=null,bag=[],curCyc=-1,curId=null,lastW=0,start=performance.now(),last='',raf=0,alive=true;
   const secs=()=>Math.max(4,opt.secs()||30);
   function build(){
     const dpr=Math.min(2,devicePixelRatio||1),r=canvas.getBoundingClientRect();
     const W=Math.max(320,Math.round(r.width*dpr)),H=Math.max(320,Math.round(r.height*dpr));
     canvas.width=W;canvas.height=H;const list=getList();
     S=buildScene(list,W,H,{bg:opt.bg(),label:opt.label(),live:true,decor:opt.decor?opt.decor():null,weather:opt.weather?opt.weather():'none'});
-    order=S.books.map((_,i)=>i);last='';
+    last='';
   }
   function frame(now){
     if(!alive)return;raf=requestAnimationFrame(frame);
@@ -909,7 +929,7 @@ function startLive(canvas,getList,opt){
 }
 
 /* ---------- page shelf (interactive) ---------- */
-let pageScene=null,pageLift=new Map(),pageAnim=0;
+let pageScene=null,pageLift=new Map();
 function render(){
   $('name').textContent=shelfName;document.title=readOnly?shelfName:shelfName;
   $('count').textContent=books.length?`${books.length} book${books.length>1?'s':''} read`:'No books yet';
@@ -950,9 +970,7 @@ async function unpackShelf(s){
   let u=b64u.dec(s.slice(1));
   if(s[0]==='z')u=new Uint8Array(await new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
   const o=JSON.parse(new TextDecoder().decode(u)),hex=v=>/^#[0-9a-f]{6}$/i.test(v)?v:null;
-  const d=o.d||{},v=d.vase||{};
-  const dec={seed:+d.seed||7,vase:{on:!!v.on,type:FLOWERS[v.type]?v.type:'tulip',count:Math.max(1,Math.min(15,+v.count||7)),style:VASES[v.style]?v.style:'ceramic'},
-    notes:(Array.isArray(d.notes)?d.notes:[]).slice(0,8).map(n=>({id:String(n.id||Math.random()).slice(0,20),color:NOTE_COLORS[n.color]?n.color:'yellow',text:String(n.text||'').slice(0,90),photo:!!n.photo,src:typeof n.src==='string'&&/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(n.src)?n.src:null}))};
+  const dec=cleanDecor(o.d);
   return {weather:WEATHER[o.w]?o.w:'none',decor:dec,name:String(o.n||'My Bookshelf').slice(0,60),bg:BGS[o.g]?o.g:'cream',secs:+o.s||30,label:o.l!==0,
     books:(o.b||[]).filter(a=>Array.isArray(a)&&typeof a[1]==='string').map(a=>({id:String(a[0]).slice(0,40),title:a[1].slice(0,120),author:String(a[2]).slice(0,80),color:hex(a[3]),accent:hex(a[4]),pages:+a[5]>0?Math.min(5000,+a[5]|0):null,note:String(a[6]).slice(0,400),finished:/^\d{4}-\d{2}$/.test(a[7])?a[7]:'',rating:Math.max(0,Math.min(5,a[8]|0)),cover:Number.isInteger(a[9])&&a[9]>0?a[9]:null,addedAt:+a[10]||0}))};
 }
@@ -970,12 +988,12 @@ $('rsBtn').onclick=()=>{$('more').close();$('rsFile').click()};
 const hexOk=v=>/^#[0-9a-f]{6}$/i.test(v)?v:null;
 $('rsFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const j=JSON.parse(await f.text());if(!Array.isArray(j.books))throw 0;
   books=j.books.filter(b=>b&&typeof b.title==='string').map(b=>({id:String(b.id||Math.random().toString(36).slice(2)).slice(0,40),title:b.title.slice(0,120),author:String(b.author||'').slice(0,80),finished:/^\d{4}-\d{2}$/.test(b.finished)?b.finished:'',rating:Math.max(0,Math.min(5,b.rating|0)),color:hexOk(b.color),accent:hexOk(b.accent),cover:Number.isInteger(b.cover)?b.cover:null,pages:Number.isInteger(b.pages)&&b.pages>0&&b.pages<=5000?b.pages:null,note:String(b.note||'').slice(0,400),addedAt:+b.addedAt||0}));
-  if(j.decor&&Array.isArray(j.decor.notes)){decor={...decor,...j.decor,vase:{...decor.vase,...(j.decor.vase||{})}};if(j.photos&&typeof j.photos==='object'){photos={};for(const [k,v] of Object.entries(j.photos))if(typeof v==='string'&&v.startsWith('data:image/'))photos[k]=v;savePhotos()}}
+  if(j.decor){decor=cleanDecor(j.decor);photos=cleanPhotos(j.photos);savePhotos()}
   if(typeof j.name==='string'&&j.name.trim())shelfName=j.name.trim().slice(0,60);toast(`Restored ${books.length} books`);after()}catch{toast('That file isn’t a bookshelf backup')}e.target.value=''};
 
 applyTextures();
-try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j){books=Array.isArray(j.books)?j.books:[];if(j.name)shelfName=j.name;if(j.bg&&BGS[j.bg])wpBg=j.bg;if(WEATHER[j.weather])wpWeather=j.weather;if(j.decor&&Array.isArray(j.decor.notes))decor={...decor,...j.decor,vase:{...decor.vase,...(j.decor.vase||{})}}}}catch{}
-try{photos=JSON.parse(localStorage.getItem(KEY+'.photos')||'{}')||{}}catch{photos={}}
+try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j){books=Array.isArray(j.books)?j.books:[];if(j.name)shelfName=j.name;if(j.bg&&BGS[j.bg])wpBg=j.bg;if(WEATHER[j.weather])wpWeather=j.weather;if(j.decor)decor=cleanDecor(j.decor)}}catch{}
+try{photos=cleanPhotos(JSON.parse(localStorage.getItem(KEY+'.photos')||'{}'))}catch{photos={}}
 const fontsReady=Promise.all(FONT_LOADS.map(f=>document.fonts.load(f).catch(()=>{})));
 (async()=>{
   const h=decodeURIComponent(location.hash||'');
