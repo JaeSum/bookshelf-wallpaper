@@ -601,14 +601,38 @@ function sceneDecor(d,ph){
   return {seed:d.seed,vase:d.vase,notes:d.notes.map(n=>{const src=n.photo?(ph[n.id]||n.src||null):null;return {...n,img:src?photoImg(src):null}})};
 }
 const decorReady=dd=>Promise.race([Promise.all((dd?.notes||[]).filter(n=>n.img).map(n=>n.img.p)),new Promise(r=>setTimeout(r,5000))]);
-function layoutNotes(S,band){
-  const {W}=S,notes=S.o.decor.notes,r=rng(S.o.decor.seed),s=band.s,out=[];
-  for(let row=0;row*band.per<notes.length;row++){
-    const items=notes.slice(row*band.per,(row+1)*band.per),gap=s*.2,tot=items.length*s+(items.length-1)*gap;
-    let x=W/2-tot/2+s/2;const y=band.y+s*.58+row*s*1.18;
-    for(const n of items){out.push({n,cx:x+(r()-.5)*s*.16,cy:y+(r()-.5)*s*.12,s,rot:(r()-.5)*.18,tape:r()});x+=s+gap}
+function layoutNotes(S){
+  const {W,H,k}=S,notes=S.o.decor.notes,rects=[];
+  for(const [ri,row] of S.rows.entries()){
+    const first=row.items[0],last=row.items[row.items.length-1];
+    const start=row.vase?row.vase.x-48*k:first?first.x:W/2,end=row.bookend?row.bookend.x+row.bookend.w:last?last.x+last.w:W/2;
+    const y1=row.base-206*k,y2=row.base-8*k;
+    rects.push({x1:row.L+10*k,x2:start-14*k,y1,y2,p:ri},{x1:end+14*k,x2:row.R-10*k,y1,y2,p:ri});
   }
-  return out;
+  const topY2=S.rows[0].base-220*k,topY1=Math.max(S.o.label?H*.15:H*.03,topY2-200*k);
+  if(topY2-topY1>60*k)rects.push({x1:S.mx,x2:W*.27,y1:topY1,y2:topY2,p:2},{x1:W*.73,x2:W-S.mx,y1:topY1,y2:topY2,p:2});
+  const botY1=S.rows[S.rows.length-1].base+70*k,botY2=Math.min(H*.97,botY1+200*k);
+  if(botY2-botY1>60*k)rects.push({x1:S.mx,x2:W*.4,y1:botY1,y2:botY2,p:3},{x1:W*.6,x2:W-S.mx,y1:botY1,y2:botY2,p:3});
+  let s=Math.min(118*k,W>H?H*.14:W*.22);
+  for(let tryN=0;tryN<8;tryN++,s*=.88){
+    const r=rng(S.o.decor.seed),out=[],m=s*.62;let ok=true;
+    const prim=rects.filter(R=>R.p<2),sec=rects.filter(R=>R.p>=2);
+    for(const [ni,n] of notes.entries()){
+      let placed=null;const st=prim.length?ni%prim.length:0;
+      for(const R of [...prim.slice(st),...prim.slice(0,st),...sec]){
+        if(R.x2-R.x1<2*m||R.y2-R.y1<2*m)continue;
+        for(let t=0;t<30&&!placed;t++){
+          const cx=R.x1+m+r()*(R.x2-R.x1-2*m),cy=R.y1+m+r()*(R.y2-R.y1-2*m);
+          if(out.every(o=>Math.abs(o.cx-cx)>s*1.12||Math.abs(o.cy-cy)>s*1.12))placed={n,cx,cy,s,rot:(r()-.5)*.22,tape:r()};
+        }
+        if(placed)break;
+      }
+      if(!placed){ok=false;break}
+      out.push(placed);
+    }
+    if(ok)return out;
+  }
+  return [];
 }
 function drawNote(x,N,k){
   const {n,cx,cy,s,rot}=N,col=NOTE_COLORS[n.color]||NOTE_COLORS.yellow;
@@ -708,19 +732,16 @@ function splitRows(list){
 function buildScene(list,W,H,o){
   const P=BGS[o.bg]||BGS.cream,rows=splitRows(list);
   const mx=o.page?Math.round(W*.012):W*.07,innerW=W-mx*2;
-  const dd=o.page?null:o.decor,vaseOn=!!dd?.vase?.on;
-  const maxU=Math.max(70,...rows.map((r,i)=>r.reduce((a,b)=>a+dims(b).w+1,0)+(i===1?BOOKEND_U+(vaseOn?VASE_U:0):0)));
+  const dd=o.page?null:o.decor,vaseOn=!!dd?.vase?.on,hasNotes=!!dd?.notes?.length;
+  const maxU=Math.max(70,...rows.map((r,i)=>r.reduce((a,b)=>a+dims(b).w+1,0)+(i===1?BOOKEND_U+(vaseOn?VASE_U:0):0)))+(hasNotes?2*150:0);
   const UNIT=532,kMax=o.page?o.dpr:Math.min(W,H)/400;
   let top=0,avail=Infinity;
-  let band=null;
-  if(!o.page&&dd&&dd.notes.length){const ns=Math.min(W*(W>H?.105:.25),H*(W>H?.17:.115)),per=Math.max(1,Math.floor(W*.86/(ns*1.2))),nr=Math.min(2,Math.ceil(dd.notes.length/per));band={y:H*(o.label?.15:.05),h:nr*ns*1.18+ns*.12,s:ns,per}}
-  const bandEnd=band?band.y+band.h:0;
-  if(!o.page){if(o.live){top=Math.max(H*(W>H?.40:.42),bandEnd+H*.2);avail=H*(W>H?.94:.90)-top}else{top=band?bandEnd+H*.025:H*(o.label?.17:.08);avail=H*(o.label||band?.93:.92)-top}}
+  const band=null;
+  if(!o.page){if(o.live){top=H*(W>H?.40:.42);avail=H*(W>H?.54:.48)}else{top=H*(o.label?.17:.08);avail=H*(o.label?.76:.84)}}
   const k=Math.min(kMax,innerW/(maxU+70),avail/UNIT);
   const blockH=UNIT*k;let y0=o.page?16*k:top+(avail-blockH)/2;
-  if(band&&!o.live&&!o.page){const off=Math.max(0,(avail-blockH)/2);band.y+=off;y0=top+off}
   if(o.page)H=Math.ceil(y0+blockH+40*k);
-  const S={W,H,k,P,mx,rows:[],books:[],o,band,thoughtTop:band?bandEnd:(o.label?H*.17:H*.05)};
+  const S={W,H,k,P,mx,rows:[],books:[],o,thoughtTop:o.label?H*.17:H*.05};
   const L=mx,R=W-mx;
   rows.forEach((r,ri)=>{
     const base=y0+214*k+ri*284*k;
@@ -731,7 +752,7 @@ function buildScene(list,W,H,o){
     if(ri===1)row.bookend={x:x+6*k,w:26*k,h:104*k};
     S.rows.push(row);
   });
-  if(band)S.notes=layoutNotes(S,band);
+  if(hasNotes)S.notes=layoutNotes(S);
   // bake layers
   S.wall=o.page?null:wallLayer(S);
   S.shelf=shelfLayer(S);S.front=frontLayer(S);
