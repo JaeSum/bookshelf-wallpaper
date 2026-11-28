@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#fbf6ef">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect x=%274%27 y=%276%27 width=%276%27 height=%2720%27 rx=%271%27 fill=%27%23c27358%27/%3E%3Crect x=%2711%27 y=%274%27 width=%275%27 height=%2722%27 rx=%271%27 fill=%27%233d5a80%27/%3E%3Crect x=%2717%27 y=%278%27 width=%276%27 height=%2718%27 rx=%271%27 fill=%27%2381b29a%27/%3E%3Crect x=%2723%27 y=%277%27 width=%275%27 height=%2719%27 rx=%271%27 transform=%27rotate(8 25 26)%27 fill=%27%23e9c46a%27/%3E%3Crect x=%272%27 y=%2726%27 width=%2728%27 height=%273%27 rx=%271%27 fill=%27%23b48555%27/%3E%3C/svg%3E">
 <title>My Bookshelf</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -238,6 +239,7 @@ details[open]{display:grid;gap:12px}
       <label class="toggle"><input type="checkbox" id="vaseOn"> Add a vase to the bottom-left of the shelf</label>
       <div id="vaseOpts" class="grp">
         <div><span class="lbl">Flowers</span><div class="chips" id="flowerChips"></div></div>
+        <p class="how" id="wandHint" hidden>✨ In the live wallpaper a wand casts a spell about every 10 seconds.</p>
         <div><label class="lbl" for="flowerCount">How many stems <b id="countVal"></b></label><input type="range" id="flowerCount" min="1" max="15" step="1"></div>
         <div><span class="lbl">Vase</span><div class="chips" id="vaseChips"></div></div>
       </div>
@@ -530,6 +532,7 @@ function drawDecorUI(){
     const x=document.createElement('button');x.type='button';x.className='x';x.textContent='×';x.setAttribute('aria-label','Remove note');x.onclick=()=>{decor.notes=decor.notes.filter(q=>q!==n);delete photos[n.id];savePhotos();drawDecorUI();decorChanged(true)};row.append(x);
     return row}));
   $('vaseOn').checked=decor.vase.on;$('vaseOpts').hidden=!decor.vase.on;$('vaseState').textContent=vaseLabel();
+  $('wandHint').hidden=decor.vase.type!=='wand';
   $('flowerCount').value=decor.vase.count;$('countVal').textContent=decor.vase.count;
   chipsInto($('flowerChips'),FLOWERS,decor.vase.type,v=>{decor.vase.type=v;drawDecorUI();decorChanged(true)});
   chipsInto($('vaseChips'),VASES,decor.vase.style,v=>{decor.vase.style=v;drawDecorUI();decorChanged(true)});
@@ -698,16 +701,39 @@ function sunHead(x,r){
   const g=x.createRadialGradient(0,0,0,0,0,r*.45);g.addColorStop(0,'#3e2410');g.addColorStop(1,'#6b4319');x.fillStyle=g;x.beginPath();x.arc(0,0,r*.45,0,7);x.fill();
   x.fillStyle='rgba(255,220,150,.25)';for(let i=0;i<30;i++){const a=i*2.4,d=Math.sqrt(i/30)*r*.4;x.beginPath();x.arc(Math.cos(a)*d,Math.sin(a)*d,r*.03,0,7);x.fill()}
 }
-const WAND_WOODS=['#3a2a1f','#5b3d27','#2a211c','#6e4b2d','#4a3324','#8a6a4a','#7b5a3a'];
+const WAND_WOODS=['#3a2a1f','#5b3d27','#2a211c','#6e4b2d','#4a3324','#8a6a4a','#7b5a3a','#d8cbb2','#211a17'];
 function wandStick(x,s,vx,base,mouth,k){
-  const p0={x:vx+(s.tip.x-vx)*.08,y:base-30*k},c={x:vx+(s.tip.x-vx)*.35,y:mouth-s.len*.4},p1=s.tip,N=16,L=[],Rr=[];
-  for(let i=0;i<=N;i++){const t=i/N,mt=1-t,px=mt*mt*p0.x+2*mt*t*c.x+t*t*p1.x,py=mt*mt*p0.y+2*mt*t*c.y+t*t*p1.y,dx=2*mt*(c.x-p0.x)+2*t*(p1.x-c.x),dy=2*mt*(c.y-p0.y)+2*t*(p1.y-c.y),l=Math.hypot(dx,dy)||1,
-    knob=s.knob&&Math.abs(t-.62)<.05?1.8*k:0,w=(5.4-3.2*t)*k/2+knob;L.push([px-dy/l*w,py+dx/l*w]);Rr.push([px+dy/l*w,py-dx/l*w])}
-  x.beginPath();x.moveTo(L[0][0],L[0][1]);for(const q of L.slice(1))x.lineTo(q[0],q[1]);for(const q of Rr.reverse())x.lineTo(q[0],q[1]);x.closePath();
-  x.fillStyle=s.col;x.fill();x.strokeStyle='rgba(20,12,6,.45)';x.lineWidth=.7*k;x.stroke();x.strokeStyle='rgba(255,240,220,.28)';x.lineWidth=.6*k;x.beginPath();x.moveTo(L[6][0],L[6][1]);for(const q of L.slice(7))x.lineTo(q[0],q[1]);x.stroke();
-  // handle rings just above the vase mouth
-  for(const t of [.58,.66]){const mt=1-t,px=mt*mt*p0.x+2*mt*t*c.x+t*t*p1.x,py=mt*mt*p0.y+2*mt*t*c.y+t*t*p1.y;x.fillStyle=shade(s.col,.14);x.beginPath();x.ellipse(px,py,3.2*k,1.3*k,s.a,0,7);x.fill()}
-  x.fillStyle='rgba(255,236,190,.55)';x.beginPath();x.arc(p1.x,p1.y,1*k,0,7);x.fill();
+  const p0={x:vx+(s.tip.x-vx)*.06,y:base-34*k},c={x:vx+(s.tip.x-vx)*.3,y:mouth-s.len*.42},p1=s.tip,N=40,L=[],Rr=[],C=[];
+  const at=t=>{const mt=1-t;return [mt*mt*p0.x+2*mt*t*c.x+t*t*p1.x,mt*mt*p0.y+2*mt*t*c.y+t*t*p1.y,2*mt*(c.x-p0.x)+2*t*(p1.x-c.x),2*mt*(c.y-p0.y)+2*t*(p1.y-c.y)]};
+  const st=s.style,G=.56;                       // G = where the carved handle meets the shaft, above the vase mouth
+  const width=t=>{
+    if(t<G){let w=8.6;if(st===0)w+=Math.sin(t*90)*.5;if(st===3)w+=Math.sin(t*55)*1.1;if(t<.1)w+=1.6;return w*k}   // carved handle
+    if(t<G+.035)return 10.2*k;                                                          // guard / collar
+    let w=6.2-4.6*Math.pow((t-G)/(1-G),.85);
+    if(st===1)for(const n of [.62,.74,.86])w+=1.6*Math.max(0,1-Math.abs(t-n)/.025);      // knobbly nodes
+    if(st===3)w+=Math.sin(t*70)*.45;                                                    // twisting vine
+    return Math.max(1.2,w)*k};
+  for(let i=0;i<=N;i++){const t=i/N,[px,py,dx,dy]=at(t),l=Math.hypot(dx,dy)||1,w=width(t)/2;L.push([px-dy/l*w,py+dx/l*w]);Rr.push([px+dy/l*w,py-dx/l*w]);C.push([px,py,dx/l,dy/l,w])}
+  const poly=()=>{x.beginPath();x.moveTo(L[0][0],L[0][1]);for(const q of L)x.lineTo(q[0],q[1]);for(const q of [...Rr].reverse())x.lineTo(q[0],q[1]);x.closePath()};
+  poly();x.fillStyle=s.col;x.fill();
+  // shading: lit left edge, shadowed right edge, dark outline
+  x.save();poly();x.clip();
+  x.strokeStyle='rgba(255,240,220,.30)';x.lineWidth=1.6*k;x.beginPath();L.forEach((q,i)=>{const o=[q[0]+(C[i][0]-q[0])*.35,q[1]+(C[i][1]-q[1])*.35];i?x.lineTo(o[0],o[1]):x.moveTo(o[0],o[1])});x.stroke();
+  x.strokeStyle='rgba(0,0,0,.30)';x.lineWidth=2.2*k;x.beginPath();Rr.forEach((q,i)=>i?x.lineTo(q[0],q[1]):x.moveTo(q[0],q[1]));x.stroke();
+  // carving on the handle
+  const dark=shade(s.col,-.18),light=shade(s.col,.16);
+  for(let i=0;i<N*G;i++){const [px,py,ux,uy,w]=C[i],t=i/N;
+    if(st===0&&i%2===0){x.strokeStyle=dark;x.lineWidth=.9*k;x.beginPath();x.moveTo(px-uy*w-ux*2*k,py+ux*w-uy*2*k);x.lineTo(px+uy*w+ux*2*k,py-ux*w+uy*2*k);x.stroke()}   // spiral grooves
+    if((st===1||st===3)&&i%4===0){x.strokeStyle=dark;x.lineWidth=1.1*k;x.beginPath();x.moveTo(px-uy*w,py+ux*w);x.lineTo(px+uy*w,py-ux*w);x.stroke()}                 // grip rings
+    if(st===2&&i%3===0){x.fillStyle=light;x.beginPath();x.arc(px,py,1*k,0,7);x.fill()}                                                                            // studded
+  }
+  x.restore();
+  poly();x.strokeStyle='rgba(18,10,4,.55)';x.lineWidth=.8*k;x.stroke();
+  // collar band (brass or silver) between handle and shaft
+  const gi=Math.round(N*(G+.017)),[gx,gy,gux,guy,gw]=C[gi];
+  x.fillStyle=s.band;x.beginPath();x.ellipse(gx,gy,gw+.6*k,2.2*k,Math.atan2(guy,gux)+Math.PI/2,0,7);x.fill();
+  x.fillStyle='rgba(255,255,255,.45)';x.beginPath();x.ellipse(gx-guy*gw*.4,gy+gux*gw*.4,gw*.35,.8*k,Math.atan2(guy,gux)+Math.PI/2,0,7);x.fill();
+  x.fillStyle='rgba(255,240,210,.65)';x.beginPath();x.arc(p1.x,p1.y,.9*k,0,7);x.fill();
 }
 function drawVase(x,vx,base,k,cfg,seed,S){
   const r=rng(seed*31+cfg.count),n=Math.max(1,Math.min(15,cfg.count|0)),H=100*k,mouth=base-H,maxRise=120*k;
@@ -716,9 +742,9 @@ function drawVase(x,vx,base,k,cfg,seed,S){
   const stems=[];
   for(let i=0;i<n;i++){
     const t=n===1?.5:i/(n-1),type=types[i%types.length],a=(-.62+t*1.0)+(r()-.5)*.18;
-    let len=(type==='wand'?124:type==='sunflower'?118:type==='lavender'?122:108)*k*(.84+r()*.26)*(1-Math.abs(t-.55)*.3);len=Math.min(len,maxRise/Math.max(.5,Math.cos(a)));
+    let len=(type==='wand'?132:type==='sunflower'?118:type==='lavender'?122:108)*k*(.84+r()*.26)*(1-Math.abs(t-.55)*.3);len=Math.min(len,maxRise/Math.max(.5,Math.cos(a)));
     const tip={x:vx+Math.sin(a)*len*.75,y:Math.max(mouth-maxRise,mouth-Math.cos(a)*len)};
-    const cols=type==='wand'?WAND_WOODS:FCOL[type];stems.push({type,a,len,tip,col:cols[Math.floor(r()*cols.length)],leaf:r(),sz:.85+r()*.3,knob:r()>.5});
+    const cols=type==='wand'?WAND_WOODS:FCOL[type];stems.push({type,a,len,tip,col:cols[Math.floor(r()*cols.length)],leaf:r(),sz:.85+r()*.3,style:Math.floor(r()*4),band:r()>.5?'#c9a24e':'#c7ccd3'});
   }
   stems.sort((p,q)=>p.len-q.len);
   if(wands&&S)S.wands=stems.map(s=>({x:s.tip.x,y:s.tip.y,a:s.a}));
@@ -795,25 +821,50 @@ function lampLayer(S){
 }
 
 /* ---------- wand magic (live wallpaper only) ---------- */
-const MAGIC_EVERY=11,MAGIC_LEN=3.4;
-const magicOn=(S,t)=>!!(S.wands&&S.wands.length&&S.o.live)&&md(t-2,MAGIC_EVERY)<MAGIC_LEN;
-const MAGIC_COLS=['#ffe08a','#d2b4ff','#9fe8ff','#ffffff','#ffb8e8','#b8ffcf'];
-function drawMagic(x,S,t){
-  if(!magicOn(S,t))return;const k=S.k,cyc=Math.floor((t-2)/MAGIC_EVERY),age=md(t-2,MAGIC_EVERY),r=rng(cyc*7919+13),w=S.wands[Math.floor(r()*S.wands.length)];
-  const p=age/MAGIC_LEN,fadeOut=Math.min(1,(MAGIC_LEN-age)/1),fadeIn=Math.min(1,age/.25),A=fadeIn*fadeOut,hue=MAGIC_COLS[Math.floor(r()*3)];
+const MAGIC_EVERY=10,MAGIC_LEN=4.2,SPELLS=['light','bolt','levitate','butterflies'];
+const SPELL_COLS=['#ff5d5d','#7dffb0','#7ec8ff','#ffd36b','#d8a8ff'];
+function magicState(S,t,avoid){
+  if(!(S.wands&&S.wands.length&&S.o.live))return null;const tt=t-2;if(tt<0)return null;
+  const cyc=Math.floor(tt/MAGIC_EVERY),age=tt-cyc*MAGIC_EVERY;if(age>MAGIC_LEN)return null;
+  const r=rng(cyc*7919+13),w=S.wands[Math.floor(r()*S.wands.length)],kind=SPELLS[md(cyc+Math.floor(r()*4),4)],col=SPELL_COLS[Math.floor(r()*SPELL_COLS.length)];
+  let book=null;if(kind==='levitate'){const bs=S.books.filter(b=>b.b.id!==avoid);book=bs.length?bs[Math.floor(r()*bs.length)]:null}
+  return {kind,w,age,cyc,col,book,A:Math.min(1,age/.3)*Math.min(1,(MAGIC_LEN-age)/.8),seed:cyc*131+7};
+}
+const magicOn=(S,t)=>!!magicState(S,t);
+function levitation(ms,k){if(!ms||ms.kind!=='levitate'||!ms.book)return 0;const a=ms.age,up=Math.min(1,a/1.1),down=Math.min(1,Math.max(0,(MAGIC_LEN-.2-a)/1));return 74*k*ease(Math.min(up,down))+Math.sin(a*3.2)*4*k*Math.min(up,down)}
+function star(x,px,py,sz){x.beginPath();x.moveTo(px,py-sz*2.2);x.lineTo(px+sz*.5,py-sz*.5);x.lineTo(px+sz*2.2,py);x.lineTo(px+sz*.5,py+sz*.5);x.lineTo(px,py+sz*2.2);x.lineTo(px-sz*.5,py+sz*.5);x.lineTo(px-sz*2.2,py);x.lineTo(px-sz*.5,py-sz*.5);x.closePath();x.fill()}
+function drawMagic(x,S,ms,lift){
+  if(!ms)return;const k=S.k,{w,age,A,col}=ms,r=rng(ms.seed);
   x.save();x.globalCompositeOperation='lighter';
-  // the tip lights up
-  const pulse=1+.25*Math.sin(age*18),gl=x.createRadialGradient(w.x,w.y,0,w.x,w.y,26*k*pulse);gl.addColorStop(0,`rgba(255,250,230,${.9*A})`);gl.addColorStop(.3,hexA(hue,.55*A));gl.addColorStop(1,hexA(hue,0));
-  x.fillStyle=gl;x.fillRect(w.x-30*k,w.y-30*k,60*k,60*k);
-  // a ribbon of light spirals upward
-  const grow=Math.min(1,age/1.4),steps=40;x.lineCap='round';
-  for(let i=1;i<=steps*grow;i++){const q=i/steps,q0=(i-1)/steps,pt=u=>[w.x+Math.sin(u*9+age*2)*(10+u*26)*k+u*(w.a*60)*k,w.y-u*150*k];
-    const [ax,ay]=pt(q0),[bx,by]=pt(q);x.strokeStyle=hexA(hue,(1-q)*.75*A);x.lineWidth=(2.6-q*1.8)*k;x.beginPath();x.moveTo(ax,ay);x.lineTo(bx,by);x.stroke()}
-  // sparkles burst out and drift up
-  for(let i=0;i<38;i++){const ang=-Math.PI/2+(r()-.5)*2.4,sp=(40+r()*120)*k,dl=r()*.8,life=1.6+r()*1.4,a2=age-dl;if(a2<0||a2>life)continue;
-    const e=1-Math.pow(1-a2/life,2),px=w.x+Math.cos(ang)*sp*e+Math.sin(a2*5+i)*6*k,py=w.y+Math.sin(ang)*sp*e-a2*22*k,al=(1-a2/life)*A*(.6+.4*Math.sin(a2*20+i)),sz=(1.2+r()*2.6)*k,col=MAGIC_COLS[i%MAGIC_COLS.length];
-    x.fillStyle=hexA(col,al);if(i%3===0){x.beginPath();x.moveTo(px,py-sz*2.2);x.lineTo(px+sz*.5,py-sz*.5);x.lineTo(px+sz*2.2,py);x.lineTo(px+sz*.5,py+sz*.5);x.lineTo(px,py+sz*2.2);x.lineTo(px-sz*.5,py+sz*.5);x.lineTo(px-sz*2.2,py);x.lineTo(px-sz*.5,py-sz*.5);x.closePath();x.fill()}
-    else{x.beginPath();x.arc(px,py,sz*.7,0,7);x.fill()}}
+  const glow=(px,py,rad,c,a)=>{const g=x.createRadialGradient(px,py,0,px,py,rad);g.addColorStop(0,`rgba(255,252,240,${a})`);g.addColorStop(.25,hexA(c,a*.6));g.addColorStop(1,hexA(c,0));x.fillStyle=g;x.fillRect(px-rad,py-rad,rad*2,rad*2)};
+  const pulse=1+.2*Math.sin(age*16);
+  if(ms.kind==='light'){
+    glow(w.x,w.y,150*k*pulse,'#fff1c9',.55*A);glow(w.x,w.y,34*k*pulse,'#ffffff',.95*A);
+    for(let i=0;i<12;i++){const a=i/12*6.283+age*.6,len=(70+40*Math.sin(age*3+i*1.7))*k;const g=x.createLinearGradient(w.x,w.y,w.x+Math.cos(a)*len,w.y+Math.sin(a)*len);g.addColorStop(0,`rgba(255,250,225,${.7*A})`);g.addColorStop(1,'rgba(255,250,225,0)');x.strokeStyle=g;x.lineWidth=(i%2?1.2:2.4)*k;x.beginPath();x.moveTo(w.x,w.y);x.lineTo(w.x+Math.cos(a)*len,w.y+Math.sin(a)*len);x.stroke()}
+  }else{glow(w.x,w.y,28*k*pulse,col,.9*A)}
+  if(ms.kind==='bolt'){
+    const tx=Math.max(S.W*.08,Math.min(S.W*.92,w.x+(r()-.25)*S.W*.4)),ty=Math.max(S.H*.06,w.y-(170+r()*120)*k),cx=(w.x+tx)/2+(r()-.5)*160*k,cy=Math.min(w.y,ty)-40*k;
+    const grow=Math.min(1,age/.45),beam=age<1.8?1:Math.max(0,1-(age-1.8)/.5),pt=u=>{const m=1-u;return [m*m*w.x+2*m*u*cx+u*u*tx,m*m*w.y+2*m*u*cy+u*u*ty]};
+    if(beam>0){for(const [lw,c,a] of [[9,col,.28],[4,col,.6],[1.8,'#ffffff',.95]]){x.strokeStyle=hexA(c,a*A*beam);x.lineWidth=lw*k*(1+.15*Math.sin(age*40));x.lineCap='round';x.beginPath();for(let i=0;i<=30*grow;i++){const [px,py]=pt(i/30);const j=Math.sin(i*1.7+age*30)*1.2*k;i?x.lineTo(px+j,py+j):x.moveTo(px,py)}x.stroke()}}
+    if(age>.45){const ba=age-.45;glow(tx,ty,(40+ba*30)*k,col,Math.max(0,.8-ba*.25)*A);
+      for(let i=0;i<44;i++){const an=r()*6.283,sp=(50+r()*150)*k,life=1.2+r()*1.6;if(ba>life)continue;const e=1-Math.pow(1-ba/life,2),px=tx+Math.cos(an)*sp*e,py=ty+Math.sin(an)*sp*e+ba*ba*30*k;x.fillStyle=hexA(i%3?col:'#ffffff',(1-ba/life)*A);if(i%4===0)star(x,px,py,(1.2+r()*1.6)*k);else{x.beginPath();x.arc(px,py,(.7+r()*1.3)*k,0,7);x.fill()}}}
+  }
+  if(ms.kind==='levitate'&&ms.book){const b=ms.book,bx=b.x+b.w/2,by=b.base-b.h/2-lift;
+    glow(bx,by,Math.max(b.w,b.h)*.75,'#ffe7a8',.35*A);
+    for(let i=0;i<18;i++){const u=md(i/18+age*.6,1),m=1-u,cx=(w.x+bx)/2,cy=Math.min(w.y,by)-60*k,px=m*m*w.x+2*m*u*cx+u*u*bx,py=m*m*w.y+2*m*u*cy+u*u*by;x.fillStyle=`rgba(255,226,150,${.8*A*Math.sin(u*Math.PI)})`;star(x,px,py,(1+Math.sin(u*Math.PI)*1.2)*k)}
+    for(let i=0;i<14;i++){const ph=r()*6.283,rad=(b.w*.6+10*k),px=bx+Math.cos(age*2+ph)*rad,py=b.base-lift+2*k-((age*40*k+i*14*k)%(b.h+30*k));x.fillStyle=`rgba(255,240,200,${.7*A})`;x.beginPath();x.arc(px,py,1.1*k,0,7);x.fill()}
+  }
+  if(ms.kind==='butterflies'){
+    for(let i=0;i<4;i++){const a=age-i*.35;if(a<0)continue;const lifeA=Math.min(1,a/.3)*A,fx=w.x+Math.sin(a*1.6+i*1.9)*(30+a*36)*k+(i-1.5)*a*22*k,fy=w.y-a*(62+i*10)*k-Math.sin(a*2.4+i)*10*k;
+      for(let tr=1;tr<8;tr++){const ta=a-tr*.08;if(ta<0)break;const tx=w.x+Math.sin(ta*1.6+i*1.9)*(30+ta*36)*k+(i-1.5)*ta*22*k,ty=w.y-ta*(62+i*10)*k-Math.sin(ta*2.4+i)*10*k;x.fillStyle=`rgba(200,235,255,${lifeA*(1-tr/8)*.6})`;x.beginPath();x.arc(tx,ty,(1.4-tr*.12)*k,0,7);x.fill()}
+      const flap=.25+.75*Math.abs(Math.sin(a*13+i));x.save();x.translate(fx,fy);x.rotate(Math.sin(a*2+i)*.35);
+      for(const sd of [-1,1]){x.save();x.scale(sd*flap,1);const g=x.createRadialGradient(6*k,-3*k,0,6*k,-3*k,12*k);g.addColorStop(0,`rgba(255,255,255,${.95*lifeA})`);g.addColorStop(.5,`rgba(170,225,255,${.6*lifeA})`);g.addColorStop(1,'rgba(150,210,255,0)');x.fillStyle=g;
+        x.beginPath();x.ellipse(6*k,-4*k,7*k,9*k,.5,0,7);x.fill();x.beginPath();x.ellipse(5*k,5*k,5*k,6*k,-.4,0,7);x.fill();x.restore()}
+      x.fillStyle=`rgba(255,255,255,${lifeA})`;x.beginPath();x.ellipse(0,0,1*k,5*k,0,0,7);x.fill();x.restore()}
+  }
+  // a few drifting sparkles accompany every spell
+  for(let i=0;i<22;i++){const an=-Math.PI/2+(r()-.5)*2.2,sp=(30+r()*80)*k,dl=r()*1.2,life=1.4+r()*1.2,a2=age-dl;if(a2<0||a2>life)continue;
+    const e=1-Math.pow(1-a2/life,2),px=w.x+Math.cos(an)*sp*e+Math.sin(a2*5+i)*5*k,py=w.y+Math.sin(an)*sp*e-a2*20*k;x.fillStyle=hexA(i%2?col:'#fff6dc',(1-a2/life)*A*.8);if(i%3===0)star(x,px,py,(1+r()*1.4)*k);else{x.beginPath();x.arc(px,py,(.6+r())*k,0,7);x.fill()}}
   x.restore();
 }
 function hexA(hex,a){const n=parseInt(hex.slice(1),16);return `rgba(${n>>16},${n>>8&255},${n&255},${Math.max(0,Math.min(1,a))})`}
@@ -1005,12 +1056,13 @@ function drawScene(x,S,st={}){
   const th=st.thought&&st.thought.a>0;
   if(th&&!S.night)drawThought(x,S,st.thought);
   x.drawImage(S.shelf,0,0);
-  for(const it of S.books){const lift=(st.lift&&st.lift.get(it.b.id))||0,cap=it.cap||0;
+  const ms=S.wands&&S.o.live?magicState(S,st.t||0,st.thought&&st.thought.it.b.id):null,lev=levitation(ms,S.k);
+  for(const it of S.books){const lift=Math.max((st.lift&&st.lift.get(it.b.id))||0,ms&&ms.book===it?lev:0),cap=it.cap||0;
     x.drawImage(it.cv,it.x,it.base+2*S.k-it.h-cap-lift,it.w,it.h+cap)}
   x.drawImage(S.front,0,0);
   if(S.o.weather==='rain')drawSplashes(x,S,st.t||0);
   if(S.lampL)x.drawImage(S.lampL,0,0);
-  if(S.wands)drawMagic(x,S,st.t||0);
+  if(ms)drawMagic(x,S,ms,lev);
   if(th&&S.night)drawThought(x,S,st.thought);
 }
 
